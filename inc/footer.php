@@ -54,11 +54,11 @@
                             <ul id="menu-seco" class="menu">
                                 <li id="menu-item-751"
                                     class="menu-item menu-item-type-post_type menu-item-object-page menu-item-751">
-                                    <a href="<?php echo $site['link'] ?>/about/">About</a>
+                                    <a href="/about/">About</a>
                                 </li>
                                 <li id="menu-item-749"
                                     class="menu-item menu-item-type-post_type menu-item-object-page menu-item-privacy-policy menu-item-749">
-                                    <a rel="privacy-policy" href="<?php echo $site['link'] ?>/privacy-policy/">Privacy
+                                    <a rel="privacy-policy" href="/privacy-policy/">Privacy
                                         Policy</a>
                                 </li>
                                 <li id="menu-item-762"
