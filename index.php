@@ -18,7 +18,6 @@ if (substr($path, -1) !== '/') {
 
 if($path == "/" || preg_match('#^/page/\d+/$#',$path) || isset($_GET['s']) || preg_match('#/(category|genres|author|tag)/(.*?)/#', $path, $matches)) {
     
-        
     $featuredPosts = [];
     $featuredPostIds = [];
     
@@ -127,6 +126,3 @@ if($path == "/" || preg_match('#^/page/\d+/$#',$path) || isset($_GET['s']) || pr
     exit;
     
 }
-
-
-// 	$res = search($_GET['s'], $limit, $offset, $pdo);

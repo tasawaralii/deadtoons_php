@@ -5,3 +5,4 @@ define('DESCRIPTION', 'Best website to downalod popular anime and cartoons in Hi
 define('LINK', 'https://'.$_SERVER['HTTP_HOST']);
 define('DEADBASE', "https://deadbase.xyz");
 define('ANIMEWORLD', "https://animeworld-india.me");
+define("IMAGE_DOMAIN", "https://deadtoons.one/content");

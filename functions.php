@@ -1,26 +1,28 @@
 <?php
 
-function AES($action, $string) {
+function AES($action, $string)
+{
     $output = false;
     $encrypt_method = "AES-256-CBC";
     $secret_key = 'deadtoons';
     $secret_iv = 'fake';
     $key = hash('sha256', $secret_key);
     $iv = substr(hash('sha256', $secret_iv), 0, 16);
-    if ( $action == 'encrypt' ) {
+    if ($action == 'encrypt') {
         $output = openssl_encrypt($string, $encrypt_method, $key, 0, $iv);
         $output = base64_encode($output);
-    } else if( $action == 'decrypt' ) {
+    } else if ($action == 'decrypt') {
         $output = openssl_decrypt(base64_decode($string), $encrypt_method, $key, 0, $iv);
     }
     return $output;
 }
 
 
-function get_anime_links($animeId, $season, $type, $honly) {
-    
+function get_anime_links($animeId, $season, $type, $honly)
+{
+
     $api = "https://dbase.deaddrive.icu";
-    
+
     if ($animeId != '') {
         if ($type == "tv") {
             if ($honly == 1) {
@@ -40,7 +42,8 @@ function get_anime_links($animeId, $season, $type, $honly) {
     }
 }
 
-function fetchContent($url) {
+function fetchContent($url)
+{
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -56,11 +59,12 @@ function fetchContent($url) {
 }
 
 
-function parse_shortcodes($content) {
+function parse_shortcodes($content)
+{
     // Regular expression to match shortcodes
-$pattern = '/\[deadbase animeid="(\d+)"(?: season="(\w+)")? type="(\w+)"(?: honly="(\d)")?\]/';
+    $pattern = '/\[deadbase animeid="(\d+)"(?: season="(\w+)")? type="(\w+)"(?: honly="(\d)")?\]/';
 
-    return preg_replace_callback($pattern, function($matches) {
+    return preg_replace_callback($pattern, function ($matches) {
         $animeId = $matches[1];
         $season = $matches[2];
         $type = $matches[3];
@@ -72,7 +76,8 @@ $pattern = '/\[deadbase animeid="(\d+)"(?: season="(\w+)")? type="(\w+)"(?: honl
 }
 
 
-function resize_image($inputFile, $outputFile, $ex) {
+function resize_image($inputFile, $outputFile, $ex)
+{
     try {
         // Create a new Imagick object and read the input file
         $image = new Imagick($inputFile);
@@ -114,7 +119,8 @@ function resize_image($inputFile, $outputFile, $ex) {
 }
 
 
-function tag($tag, $limit, $offset, $pdo) {
+function tag($tag, $limit, $offset, $pdo)
+{
     $stmt = $pdo->prepare("
         SELECT 
             posts.*,
@@ -166,7 +172,8 @@ function tag($tag, $limit, $offset, $pdo) {
 }
 
 
-function author_posts($author, $limit, $offset, $pdo) {
+function author_posts($author, $limit, $offset, $pdo)
+{
     $stmt = $pdo->prepare("
         SELECT 
             posts.id, posts.title, posts.pubDate, posts.slug, 
@@ -210,7 +217,8 @@ function author_posts($author, $limit, $offset, $pdo) {
 }
 
 
-function single($slug, $pdo) {
+function single($slug, $pdo)
+{
     $stmt = $pdo->prepare("
         SELECT posts.*,images.file_path,
             authors.author_slug,authors.author_email,authors.author_display_name,authors.author_quote,
@@ -237,7 +245,8 @@ function single($slug, $pdo) {
 }
 
 
-function genre($cat, $limit, $offset, $pdo) {
+function genre($cat, $limit, $offset, $pdo)
+{
     $stmt = $pdo->prepare("
         SELECT 
             posts.id, posts.title, posts.pubDate, posts.slug, images.file_path,
@@ -275,7 +284,8 @@ function genre($cat, $limit, $offset, $pdo) {
 }
 
 
-function category($cat, $limit, $offset, $pdo) {
+function category($cat, $limit, $offset, $pdo)
+{
     $stmt = $pdo->prepare("
         SELECT 
             posts.id, posts.title, posts.pubDate, posts.slug, images.file_path,
@@ -313,11 +323,12 @@ function category($cat, $limit, $offset, $pdo) {
 }
 
 
-function search($s, $limit, $offset, $pdo) {
+function search($s, $limit, $offset, $pdo)
+{
     $s = trim($s);
     $escaped = preg_quote($s);
     $searchTerm = '\\b' . $escaped . '\\b';
-    
+
     // First Query: RLIKE exact word match
     $stmt1 = $pdo->prepare("
         SELECT 
@@ -417,7 +428,7 @@ function search($s, $limit, $offset, $pdo) {
 
     // Merge all
     $all = array_merge($p1, $p2, $p3, $p4);
-    
+
     return [
         'posts' => array_slice($all, $offset, $limit),
         'total' => count($all)
@@ -425,13 +436,15 @@ function search($s, $limit, $offset, $pdo) {
 }
 
 
-function totalPosts($pdo) {
+function totalPosts($pdo)
+{
     $stmt = $pdo->query("SELECT COUNT(*) AS total FROM posts");
     return $stmt->fetchColumn();
 }
 
 
-function posts($excludeFeaturedClause, $limit, $offset, $pdo) {
+function posts($excludeFeaturedClause, $limit, $offset, $pdo)
+{
     // To safely append exclude clause, ensure it starts with a valid AND or is empty
     $allowedClause = '';
     if ($excludeFeaturedClause && preg_match('/^(AND|OR)\s/i', $excludeFeaturedClause)) {
@@ -464,7 +477,8 @@ function posts($excludeFeaturedClause, $limit, $offset, $pdo) {
 }
 
 
-function featured($pdo) {
+function featured($pdo)
+{
     $featuredQuery = $pdo->query("SELECT 
     posts.id,posts.title,posts.pubDate,posts.slug, 
     images.file_path,
@@ -490,30 +504,32 @@ GROUP BY
 ORDER BY 
     posts.pubDate DESC;");
 
-$featuredPosts = $featuredQuery->fetchAll(PDO::FETCH_ASSOC);
-return $featuredPosts;
+    $featuredPosts = $featuredQuery->fetchAll(PDO::FETCH_ASSOC);
+    return $featuredPosts;
 }
 
 
 
-function get_gravatar_url($email, $size = 64) {
+function get_gravatar_url($email, $size = 64)
+{
     $email = strtolower(trim($email));
     $hash = md5($email);
     return "https://www.gravatar.com/avatar/$hash?s=$size";
 }
 
 
-function author($email,$name,$slug,$quot) {
+function author($email, $name, $slug, $quot)
+{
     echo '<div id="author" class="herald-vertical-padding">
-	<div class="herald-mod-wrap"><div class="herald-mod-head "><div class="herald-mod-title"><h4 class="h6 herald-mod-h herald-color">About the author</h4></div><div class="herald-mod-actions"><a href="https://deadtoons.one/author/'.$slug.'/">View All Posts</a></div></div></div>
+	<div class="herald-mod-wrap"><div class="herald-mod-head "><div class="herald-mod-title"><h4 class="h6 herald-mod-h herald-color">About the author</h4></div><div class="herald-mod-actions"><a href="https://deadtoons.one/author/' . $slug . '/">View All Posts</a></div></div></div>
 	<div class="herald-author row">
 
 		<div class="herald-author-data col-lg-2 col-md-2 col-sm-2 col-xs-2">
-			<img alt="" src="'.get_gravatar_url($email, 140).'" class="avatar avatar-140 photo" height="140" width="140" loading="lazy" decoding="async"/>		</div>
+			<img alt="" src="' . get_gravatar_url($email, 140) . '" class="avatar avatar-140 photo" height="140" width="140" loading="lazy" decoding="async"/>		</div>
 		
 		<div class="herald-data-content col-lg-10 col-md-10 col-sm-10 col-xs-10">
-			<h4 class="author-title">'.$name.'</h4>
-			<p>'.$quot.'</p>
+			<h4 class="author-title">' . $name . '</h4>
+			<p>' . $quot . '</p>
 		</div>
 
 	</div>
@@ -524,68 +540,68 @@ function author($email,$name,$slug,$quot) {
 
 
 function pagination($total, $pgno, $limit, $domain, $s, $cat)
-{   
-        if(!$total == 0) {
-    $output = '<nav class="herald-pagination">';
+{
+    if (!$total == 0) {
+        $output = '<nav class="herald-pagination">';
 
-    if($pgno > 1) {
-        $output.= '<a class="prev page-numbers" href="'.$domain.$cat.'/page/'.($pgno-1).'/'.$s.'">Previous</a>';
-    }
-        $pages = $total % $limit == 0 ? $total / $limit : ($total / $limit) + 1 ;
+        if ($pgno > 1) {
+            $output .= '<a class="prev page-numbers" href="' . $domain . $cat . '/page/' . ($pgno - 1) . '/' . $s . '">Previous</a>';
+        }
+        $pages = $total % $limit == 0 ? $total / $limit : ($total / $limit) + 1;
         $pages = intval($pages);
-    // if pages exists after loop's lower limit
-    if ($pages > 1) {
-        if (($pgno - 3) > 0) {
-            $output = $output . '<a href="'.$domain.$cat.'/page/1/'.$s.'" class="page-numbers'.(($pgno == 1) ? "current" : '').'">1</a>';
-        }
-        if (($pgno - 3) > 1) {
-            $output = $output . '<span class="page-numbers dots">&hellip;</span>';
-        }
+        // if pages exists after loop's lower limit
+        if ($pages > 1) {
+            if (($pgno - 3) > 0) {
+                $output = $output . '<a href="' . $domain . $cat . '/page/1/' . $s . '" class="page-numbers' . (($pgno == 1) ? "current" : '') . '">1</a>';
+            }
+            if (($pgno - 3) > 1) {
+                $output = $output . '<span class="page-numbers dots">&hellip;</span>';
+            }
 
-        // Loop for provides links for 2 pages before and after current page
-        for ($i = ($pgno - 2); $i <= ($pgno + 2); $i ++) {
-            if ($i < 1)
-                continue;
-            if ($i > $pages)
-                break;
-            if ($pgno == $i)
-                $output = $output . '<span aria-current="page" class="page-numbers current">'.$i.'</span>';
-            else
-                $output = $output . '<a class="page-numbers" href="'.$domain.$cat.'/page/'.$i.'/'.$s.'">'.$i.'</a>';
-        }
+            // Loop for provides links for 2 pages before and after current page
+            for ($i = ($pgno - 2); $i <= ($pgno + 2); $i++) {
+                if ($i < 1)
+                    continue;
+                if ($i > $pages)
+                    break;
+                if ($pgno == $i)
+                    $output = $output . '<span aria-current="page" class="page-numbers current">' . $i . '</span>';
+                else
+                    $output = $output . '<a class="page-numbers" href="' . $domain . $cat . '/page/' . $i . '/' . $s . '">' . $i . '</a>';
+            }
 
-        // if pages exists after loop's upper limit
-        if (($pages - ($pgno + 2)) > 1) {
-            $output = $output . '<span class="page-numbers dots">&hellip;</span>';
+            // if pages exists after loop's upper limit
+            if (($pages - ($pgno + 2)) > 1) {
+                $output = $output . '<span class="page-numbers dots">&hellip;</span>';
+            }
+            if (($pages - ($pgno + 2)) > 0) {
+                if ($pgno == $pages)
+                    $output = $output . '<span aria-current="page" class="page-numbers current">' . $pages . '</span>';
+                else
+                    $output = $output . '<a class="page-numbers" href="' . $domain . $cat . '/page/' . $pages . '/' . $s . '">' . $pages . '</a>';
+            }
         }
-        if (($pages - ($pgno + 2)) > 0) {
-            if ($pgno == $pages)
-                $output = $output . '<span aria-current="page" class="page-numbers current">'.$pages.'</span>';
-            else
-                $output = $output . '<a class="page-numbers" href="'.$domain.$cat.'/page/'.$pages.'/'.$s.'">'.$pages.'</a>';
-        }
+        if ($pgno != $pages)
+            $output .= '<a class="next page-numbers" href="' . $domain . $cat . '/page/' . ($pgno + 1) . '/' . $s . '">Next</a>';
+        $output .= '</nav>';
+        return $output;
     }
-    if($pgno != $pages)
-    $output.= '<a class="next page-numbers" href="'.$domain.$cat.'/page/'.($pgno+1).'/'.$s.'">Next</a>';
-    $output.= '</nav>';
-    return $output;
-        }
-        return;
+    return;
 }
 
-
-function article($a, $domain, $cat, $sticky = false) {
-    echo '<article class="herald-lay-b post-'.$a['id'].' post type-post status-publish format-standard has-post-thumbnail'.(($sticky) ? " sticky" : '').' hentry">';
-        echo '<div class="row">
+function article($a, $domain, $cat, $sticky = false)
+{
+    echo '<article class="herald-lay-b post-' . $a['id'] . ' post type-post status-publish format-standard has-post-thumbnail' . (($sticky) ? " sticky" : '') . ' hentry">';
+    echo '<div class="row">
 			<div class="col-lg-4 col-md-4 col-sm-4">
 			<div class="herald-post-thumbnail herald-format-icon-middle">
-				<a href="'.$domain.$a['slug'].'/"
-				 title="'.$a['title'].'">
+				<a href="/' . $a['slug'] . '/"
+				 title="' . $a['title'] . '">
 					<img width="640" height="360" 
-					src="'."$domain".'/content/';
-                    
-                    $ex = pathinfo($a['file_path']);
-                    echo $ex['dirname'].'/'.$ex['filename'].'-640x360.'.$ex['extension'].'" 
+					src="' . IMAGE_DOMAIN . '/';
+
+    $ex = pathinfo($a['file_path']);
+    echo $ex['dirname'] . '/' . $ex['filename'] . '-640x360.' . $ex['extension'] . '" 
 					class="attachment-herald-lay-b1 size-herald-lay-b1 wp-post-image" alt="" 
 					</a>
 		</div>
@@ -593,26 +609,26 @@ function article($a, $domain, $cat, $sticky = false) {
 	<div class="col-lg-8 col-md-8 col-sm-8">
 		<div class="entry-header">
 			<span class="meta-category">';
-            $cat_slugs = $a['cat_slugs'] ? explode(',', $a['cat_slugs']) : [];
-            $cat_names = $a['cat_names'] ? explode(',', $a['cat_names']) : [];
-            $cat_html = [];
-            foreach ($cat_slugs as $index => $cat_slug) {
-                $cat_name = $cat_names[$index];
-                $cat_html[] = "<a href='$domain$cat/{$cat_slug}/' class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
-            }
-                    echo implode('<span> &bull; </span>',$cat_html);
-            echo '<h2 class="entry-title h3">
-				<a href="'.$domain.$a['slug'].'/">'.$a['title'].'</a></h2>
+    $cat_slugs = $a['cat_slugs'] ? explode(',', $a['cat_slugs']) : [];
+    $cat_names = $a['cat_names'] ? explode(',', $a['cat_names']) : [];
+    $cat_html = [];
+    foreach ($cat_slugs as $index => $cat_slug) {
+        $cat_name = $cat_names[$index];
+        $cat_html[] = "<a href=/'$cat/{$cat_slug}/' class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
+    }
+    echo implode('<span> &bull; </span>', $cat_html);
+    echo '<h2 class="entry-title h3">
+				<a href="/' . $a['slug'] . '/">' . $a['title'] . '</a></h2>
 				<div class="entry-meta">
 					<div class="meta-item herald-date">
-						<span class="updated">'.time_elapsed_string($a['pubDate']).'</span>
+						<span class="updated">' . time_elapsed_string($a['pubDate']) . '</span>
 					</div>
 					<div class="meta-item herald-comments">
-						<a href="'.$domain.$a['slug'].'#comments">'.$a['comments'].' Comments</a></div>
+						<a href="/' . $a['slug'] . '#comments">' . $a['comments'] . ' Comments</a></div>
                         <div class="meta-item herald-author">
                         <span class="vcard author">
                         <span class="fn">
-                        <a href="'.$domain.'author/'.$a['author_slug'].'/">'.$a['author_display_name'].'</a>
+                        <a href="/' . 'author/' . $a['author_slug'] . '/">' . $a['author_display_name'] . '</a>
                         </span>
                         </span>
                         </div>
@@ -623,7 +639,8 @@ function article($a, $domain, $cat, $sticky = false) {
 	</article>	
 	';
 }
-function time_elapsed_string($datetime, $full = false) {
+function time_elapsed_string($datetime, $full = false)
+{
     $timezone = new DateTimeZone('Asia/Karachi');
     $now = new DateTime('now', $timezone);
     $ago = new DateTime($datetime, $timezone);
@@ -662,7 +679,8 @@ function time_elapsed_string($datetime, $full = false) {
         }
     }
 
-    if (!$full) $string = array_slice($string, 0, 1);
+    if (!$full)
+        $string = array_slice($string, 0, 1);
     return $string ? implode(', ', $string) . ' ago' : 'just now';
 }
 
