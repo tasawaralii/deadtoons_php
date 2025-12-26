@@ -75,9 +75,7 @@ require_once "inc/head.php"
 							<div class="col-lg-12 col-md-12 col-sm-12">
 								<div class="entry-content herald-entry-content">
 
-									<?php
-									// 	echo $post['content'];
-									
+									<?php									
 
 									$parsed_content = parse_shortcodes($post['content']);
 
@@ -140,7 +138,7 @@ require_once "inc/head.php"
 	?>
 	<a href="javascript:void(0)" id="back-top" class="herald-goto-top"><i class="fa fa-angle-up"></i></a>
 
-	<script type="text/javascript" src="<?php echo $site['link'] . "/js/imagesloaded.min.js" ?>"
+	<script type="text/javascript" src="/js/imagesloaded.min.js"
 		id="imagesloaded-js"></script>
 
 
@@ -153,10 +151,10 @@ require_once "inc/head.php"
 			"header_sticky_up": "",
 			"single_sticky_bar": "",
 			"popup_img": "1",
-			"logo": "<?php echo $site['link'] ?>/content\/2023\/11\/Bnu6Tln.webp",
-			"logo_retina": "<?php echo $site['link'] ?>\/content\/2023\/11\/Bnu6Tln.webp",
-			"logo_mini": "<?php echo $site['link'] ?>\/content\/2023\/11\/Bnu6Tln.webp",
-			"logo_mini_retina": "<?php echo $site['link'] ?>\/content\/2023\/11\/Bnu6Tln.webp",
+			"logo": "/public/images/logo.png",
+			"logo_retina": "/public/images/logo.png",
+			"logo_mini": "/public/images/logo.png",
+			"logo_mini_retina": "/public/images/logo.png",
 			"smooth_scroll": "1",
 			"trending_columns": "6",
 			"responsive_menu_more_link": "",
@@ -168,7 +166,7 @@ require_once "inc/head.php"
 	</script>
 
 
-	<script type="text/javascript" src="<?php echo $site['link'] . "/js/min.js" ?>" id="herald-main-js"></script>
+	<script type="text/javascript" src="/js/min.js" id="herald-main-js"></script>
 
 </body>
 
