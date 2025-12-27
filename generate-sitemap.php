@@ -1,5 +1,5 @@
 <?php
-// Database connection
+
 require('db.php');
 
 // Define the sitemap file path

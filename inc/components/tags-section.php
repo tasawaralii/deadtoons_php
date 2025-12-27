@@ -7,7 +7,7 @@ if ($post['tag_slugs'] != '' || $post['tag_slugs'] != null) {
     $tag_names = explode(',', $post['tag_names']);
     foreach ($tag_slugs as $index => $tag_slug) {
         $tag_name = $tag_names[$index];
-        echo "<a href='" . $site['link'] . "/tag/{$tag_slug}/' rel='tag'>{$tag_name}</a> ";
+        echo "<a href='/tag/{$tag_slug}/' rel='tag'>{$tag_name}</a> ";
     }
     echo '</div>';
     echo "</div>";

@@ -2,7 +2,6 @@
 
 require_once("functions.php");
 require_once("db.php");
-require_once("site_info.php");
 require_once('config.php');
 
 $uri = $_SERVER['REQUEST_URI'];

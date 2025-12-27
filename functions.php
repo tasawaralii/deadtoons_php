@@ -589,7 +589,7 @@ function pagination($total, $pgno, $limit, $domain, $s, $cat)
     return;
 }
 
-function article($a, $domain, $cat, $sticky = false)
+function article($a, $cat, $sticky = false)
 {
     echo '<article class="herald-lay-b post-' . $a['id'] . ' post type-post status-publish format-standard has-post-thumbnail' . (($sticky) ? " sticky" : '') . ' hentry">';
     echo '<div class="row">

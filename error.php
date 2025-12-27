@@ -1,6 +1,5 @@
 <?php
 http_response_code(404);
-require('site_info.php');
 ?>
 
 <!DOCTYPE html>
@@ -41,9 +40,8 @@ require_once "inc/head.php"
 							<div class="herald-page-thumbnail">
 
 								<span>
-									<img
-										src="/public/images/default.png" />
-									</span>
+									<img src="/public/images/default.png" />
+								</span>
 							</div>
 						</div>
 
@@ -54,7 +52,7 @@ require_once "inc/head.php"
 									accidentally mistype the page address, or followed an expired link. Anyway, we will
 									help you get back on track. Why not try to search for the page you were looking for:
 								</p>
-								<form class="herald-search-form" action="<?php echo $site['link'] ?>" method="get">
+								<form class="herald-search-form" action="" method="get">
 									<input name="s" class="herald-search-input" type="text" value=""
 										placeholder="Type here to search..." /><button type="submit"
 										class="herald-search-submit"></button>

@@ -68,11 +68,11 @@ require_once "inc/head.php"
 						<?php
 
 						foreach ($featuredPosts as $a) {
-							article($a, $site['link'] . "/", "category", true);
+							article($a, "category", true);
 						}
 
 						foreach ($posts as $a) {
-							article($a, $site['link'] . "/", ((isset($_GET['genres']) ? "genres" : "category")), false);
+							article($a, ((isset($_GET['genres']) ? "genres" : "category")), false);
 						}
 
 						?>

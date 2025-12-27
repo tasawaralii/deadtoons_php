@@ -9,7 +9,7 @@
         $cat_name = $cat_names[$index];
         if (!$cat_name)
             continue;
-        $cat_html[] = "<a href=" . $site['link'] . "/category/{$cat_slug}/ class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
+        $cat_html[] = "<a href='/category/{$cat_slug}/' class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
     }
 
     if ($cat_html) {
