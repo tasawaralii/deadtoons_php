@@ -79,3 +79,42 @@
         </div>
     </div>
 </footer>
+
+
+<a href="javascript:void(0)" id="back-top" class="herald-goto-top"><i class="fa fa-angle-up"></i></a>
+
+<!-- The popup and overlay -->
+<div id="overlay" class="overlay" style="display: none;"></div>
+<div id="popup" class="popup" style="display: none;">
+    <h2>Click Here to Go to Link</h2>
+    <button onclick="goToLink()">Click Me</button>
+</div>
+
+<script type="text/javascript" src="/js/imagesloaded.min.js" id="imagesloaded-js"></script>
+
+
+
+<script type="text/javascript" id="herald-main-js-extra">
+    /* <![CDATA[ */
+    var herald_js_settings = {
+        "rtl_mode": "false",
+        "header_sticky": "1",
+        "header_sticky_offset": "600",
+        "header_sticky_up": "",
+        "single_sticky_bar": "",
+        "popup_img": "1",
+        "logo": "/public/images/logo.png",
+        "logo_retina": "/public/images/logo.png",
+        "logo_mini": "/public/images/logo.png",
+        "logo_mini_retina": "/public/images/logo.png",
+        "smooth_scroll": "1",
+        "trending_columns": "6",
+        "responsive_menu_more_link": "",
+        "header_ad_responsive": "",
+        "header_responsive_breakpoint": "1249"
+    };
+
+    /* ]]> */
+</script>
+
+<script type="text/javascript" src="/js/min.js" id="herald-main-js"></script>

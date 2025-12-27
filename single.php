@@ -10,7 +10,7 @@ $keywords = "$anime_name, $anime_name anime in hindi, $anime_name hindi dubbed d
 
 <?php
 require_once "inc/head.php"
-?>
+	?>
 
 <body
 	class="post-template-default single single-post postid-<?php echo $post['id'] ?> single-format-standard wp-embed-responsive herald-boxed herald-v_2_6_2">
@@ -27,88 +27,41 @@ require_once "inc/head.php"
 				class="herald-single post-<?php echo $post['id'] ?> post type-post status-publish format-standard has-post-thumbnail hentry">
 				<div class="row">
 
-
 					<div class="col-lg-9 col-md-9 col-mod-single col-mod-main">
 
-						<header class="entry-header">
-							<span class="meta-category">
+						<?php require_once "inc/components/post-header.php"; ?>
 
-								<?php
-								$cat_slugs = $post['cat_slugs'] ? explode(',', $post['cat_slugs']) : [];
-								$cat_names = $post['cat_names'] ? explode(',', $post['cat_names']) : [];
-								$cat_html = [];
-								foreach ($cat_slugs as $index => $cat_slug) {
-									$cat_name = $cat_names[$index];
-									if (!$cat_name)
-										continue;
-									$cat_html[] = "<a href=" . $site['link'] . "/category/{$cat_slug}/ class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
-								}
-								echo implode('<span> &bull; </span>', $cat_html);
-								?>
+						<!-- Thumbnail -->
+						<?php if ($post['file_path']): ?>
 
-								<?php
-								if (!$ispost) {
-									echo '<center><h1 class="entry-title h1">' . $post['title'] . '</h1></center><br><br>';
-								} else {
-									echo '<h1 class="entry-title h1">' . $post['title'] . '</h1>';
-								}
-								?>
-								<?php
-								if ($ispost) { ?>
-									<div class="entry-meta entry-meta-single">
-										<div class="meta-item herald-date">
-											<span class="updated"><?php echo time_elapsed_string($post['pubDate']) ?></span>
-										</div>
-									</div>
-							</header>
 							<div class="herald-post-thumbnail herald-post-thumbnail-single">
-								<span><img width="780" height="439"
-										src="<?= IMAGE_DOMAIN . "/" . $post['file_path'] ?>"
+								<span>
+									<img width="780" height="439" src="<?= IMAGE_DOMAIN . "/" . $post['file_path'] ?>"
 										class="attachment-herald-lay-single size-herald-lay-single wp-post-image"
-										alt="<?php echo $post['title'] ?>" /></span>
+										alt="<?php echo $post['title'] ?>" />
+								</span>
 							</div>
-						<?php } ?>
+
+						<?php endif ?>
+
 						<div class="row">
 
-
-
-							<div class="col-lg-12 col-md-12 col-sm-12">
-								<div class="entry-content herald-entry-content">
-
-									<?php									
-
-									$parsed_content = parse_shortcodes($post['content']);
-
-									echo $parsed_content;
-
-									?>
-									<?php
-									if ($post['tag_slugs'] != '' || $post['tag_slugs'] != null) {
-										echo '<div class="meta-tags">';
-										echo '<span>Tags</span>';
-										$tag_slugs = explode(',', $post['tag_slugs']);
-										$tag_names = explode(',', $post['tag_names']);
-										foreach ($tag_slugs as $index => $tag_slug) {
-											$tag_name = $tag_names[$index];
-											echo "<a href='" . $site['link'] . "/tag/{$tag_slug}/' rel='tag'>{$tag_name}</a> ";
-										}
-										echo '</div>';
-									}
-									?>
-
-								</div>
-							</div>
+							<?php require_once "inc/components/post-body.php" ?>
+							<?php require_once "inc/components/tags-section.php" ?>
 
 							<div id="extras" class="col-lg-12 col-md-12 col-sm-12">
 
-
-
 								<?php
 								if ($ispost) {
-									require('inc/related.php');
-									author($post['author_email'], $post['author_display_name'], $post['author_slug'], $post['author_quote']);
+									require('inc/components/related.php');
+									$authorEmail = $post['author_email'];
+									$authorName = $post['author_display_name'];
+									$authorSlug = $post['author_slug'];
+									$authorLine = $post['author_quote'];
+									require('inc/components/author-box.php');
+
 									$com_post_id = $post['id'];
-									require('comments.php');
+									require('inc/components/comments.php');
 								}
 								?>
 
@@ -136,37 +89,7 @@ require_once "inc/head.php"
 	<?php
 	require('inc/footer.php');
 	?>
-	<a href="javascript:void(0)" id="back-top" class="herald-goto-top"><i class="fa fa-angle-up"></i></a>
 
-	<script type="text/javascript" src="/js/imagesloaded.min.js"
-		id="imagesloaded-js"></script>
-
-
-	<script type="text/javascript" id="herald-main-js-extra">
-		/* <![CDATA[ */
-		var herald_js_settings = {
-			"rtl_mode": "false",
-			"header_sticky": "1",
-			"header_sticky_offset": "600",
-			"header_sticky_up": "",
-			"single_sticky_bar": "",
-			"popup_img": "1",
-			"logo": "/public/images/logo.png",
-			"logo_retina": "/public/images/logo.png",
-			"logo_mini": "/public/images/logo.png",
-			"logo_mini_retina": "/public/images/logo.png",
-			"smooth_scroll": "1",
-			"trending_columns": "6",
-			"responsive_menu_more_link": "",
-			"header_ad_responsive": "",
-			"header_responsive_breakpoint": "1249"
-		};
-
-		/* ]]> */
-	</script>
-
-
-	<script type="text/javascript" src="/js/min.js" id="herald-main-js"></script>
 
 </body>
 
