@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /admin/
 Disallow: /error/
 Allow: /
-Sitemap: https://deadtoonsindia.cc/sitemap.xml
+Sitemap: https://deadtoons.org/sitemap.xml

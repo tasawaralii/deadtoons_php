@@ -1,23 +1,5 @@
 <?php
 
-function AES($action, $string)
-{
-    $output = false;
-    $encrypt_method = "AES-256-CBC";
-    $secret_key = 'deadtoons';
-    $secret_iv = 'fake';
-    $key = hash('sha256', $secret_key);
-    $iv = substr(hash('sha256', $secret_iv), 0, 16);
-    if ($action == 'encrypt') {
-        $output = openssl_encrypt($string, $encrypt_method, $key, 0, $iv);
-        $output = base64_encode($output);
-    } else if ($action == 'decrypt') {
-        $output = openssl_decrypt(base64_decode($string), $encrypt_method, $key, 0, $iv);
-    }
-    return $output;
-}
-
-
 function get_anime_links($animeId, $season, $type, $honly)
 {
 
@@ -508,36 +490,12 @@ ORDER BY
     return $featuredPosts;
 }
 
-
-
 function get_gravatar_url($email, $size = 64)
 {
     $email = strtolower(trim($email));
     $hash = md5($email);
     return "https://www.gravatar.com/avatar/$hash?s=$size";
 }
-
-
-function author($email, $name, $slug, $quot)
-{
-    echo '<div id="author" class="herald-vertical-padding">
-	<div class="herald-mod-wrap"><div class="herald-mod-head "><div class="herald-mod-title"><h4 class="h6 herald-mod-h herald-color">About the author</h4></div><div class="herald-mod-actions"><a href="https://deadtoons.one/author/' . $slug . '/">View All Posts</a></div></div></div>
-	<div class="herald-author row">
-
-		<div class="herald-author-data col-lg-2 col-md-2 col-sm-2 col-xs-2">
-			<img alt="" src="' . get_gravatar_url($email, 140) . '" class="avatar avatar-140 photo" height="140" width="140" loading="lazy" decoding="async"/>		</div>
-		
-		<div class="herald-data-content col-lg-10 col-md-10 col-sm-10 col-xs-10">
-			<h4 class="author-title">' . $name . '</h4>
-			<p>' . $quot . '</p>
-		</div>
-
-	</div>
-
-
-</div>';
-}
-
 
 function pagination($total, $pgno, $limit, $domain, $s, $cat)
 {
