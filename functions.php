@@ -3,7 +3,7 @@
 function get_anime_links($animeId, $season, $type, $honly)
 {
 
-    $api = "https://dbase.deaddrive.icu";
+    $api = "http://deadbase-old.local";
 
     if ($animeId != '') {
         if ($type == "tv") {
@@ -640,6 +640,165 @@ function time_elapsed_string($datetime, $full = false)
     if (!$full)
         $string = array_slice($string, 0, 1);
     return $string ? implode(', ', $string) . ' ago' : 'just now';
+}
+
+function cache_dir()
+{
+    return __DIR__ . DIRECTORY_SEPARATOR . 'cache';
+}
+
+function cache_read_raw($key)
+{
+    $file = cache_dir() . DIRECTORY_SEPARATOR . $key . '.json';
+    if (!is_file($file))
+        return null;
+    $json = @file_get_contents($file);
+    if ($json === false)
+        return null;
+    $data = json_decode($json, true);
+    return is_array($data) ? $data : null;
+}
+
+function cache_get_today($key)
+{
+    $raw = cache_read_raw($key);
+    if (!$raw)
+        return null;
+    $today = date('Y-m-d');
+    if (isset($raw['date']) && $raw['date'] === $today && isset($raw['value'])) {
+        return $raw['value'];
+    }
+    return null;
+}
+
+function cache_set_today($key, $value)
+{
+    $dir = cache_dir();
+    if (!is_dir($dir))
+        @mkdir($dir, 0775, true);
+    $file = $dir . DIRECTORY_SEPARATOR . $key . '.json';
+    $payload = [
+        'date' => date('Y-m-d'),
+        'value' => $value
+    ];
+    @file_put_contents($file, json_encode($payload), LOCK_EX);
+}
+
+function get_menu_data($pdo)
+{
+    // Fetch specific categories in a defined order
+    $desired = [
+        ['name' => 'completed', 'slug' => 'completed'],
+        ['name' => 'movie', 'slug' => 'movie'],
+        ['name' => 'marvel', 'slug' => 'marvel']
+    ];
+
+    $cstmt = $pdo->prepare("SELECT cat_name, cat_slug FROM categories ORDER BY cat_name ASC");
+    $cstmt->execute();
+    $categories = $cstmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fetch all genres alphabetically
+    $gstmt = $pdo->prepare("SELECT genre_name, genre_slug FROM genres ORDER BY genre_name ASC");
+    $gstmt->execute();
+    $genres = $gstmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return ['desired' => $desired, 'categories' => $categories, 'genres' => $genres];
+}
+
+function get_menu_data_cached($pdo)
+{
+    $cached = cache_get_today('menu_data');
+    if ($cached !== null)
+        return $cached;
+
+    try {
+        $fresh = get_menu_data($pdo);
+        cache_set_today('menu_data', $fresh);
+        return $fresh;
+    } catch (Throwable $e) {
+        $raw = cache_read_raw('menu_data');
+        if ($raw && isset($raw['value']))
+            return $raw['value'];
+        return ['categories' => [], 'genres' => []];
+    }
+}
+
+function build_menu_html($menuData, $ulId, $ulClass)
+{
+    $desired = isset($menuData['desired']) ? $menuData['desired'] : [];
+    $categories = isset($menuData['categories']) ? $menuData['categories'] : [];
+    $genres = isset($menuData['genres']) ? $menuData['genres'] : [];
+
+    $html = '<ul id="' . htmlspecialchars($ulId) . '" class="' . htmlspecialchars($ulClass) . '">';
+
+    // Home
+    $html .= '<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home">'
+        . '<a href="/" aria-current="page">Home</a>'
+        . '</li>';
+
+    // Top-level categories
+    foreach ($desired as $d) {
+        $slug = htmlspecialchars($d['slug']);
+        $name = htmlspecialchars($d['name']);
+        $html .= '<li class="menu-item menu-item-type-taxonomy menu-item-object-category">'
+            . '<a href="/category/' . $slug . '/">' . $name . '</a>'
+            . '</li>';
+    }
+
+
+    // Category dropdown
+    $html .= '<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">'
+        . '<a href="#">Categories</a>'
+        . '<ul class="sub-menu">';
+    foreach ($categories as $c) {
+        $cslug = htmlspecialchars($c['cat_slug']);
+        $cname = htmlspecialchars($c['cat_name']);
+        $html .= '<li class="menu-item menu-item-type-taxonomy menu-item-object-genre">'
+            . '<a href="/genres/' . $cslug . '/">' . $cname . '</a>'
+            . '</li>';
+    }
+    $html .= '</ul></li>';
+
+    // Genre dropdown
+    $html .= '<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">'
+        . '<a href="#">Genre</a>'
+        . '<ul class="sub-menu">';
+    foreach ($genres as $g) {
+        $gslug = htmlspecialchars($g['genre_slug']);
+        $gname = htmlspecialchars($g['genre_name']);
+        $html .= '<li class="menu-item menu-item-type-taxonomy menu-item-object-genre">'
+            . '<a href="/genres/' . $gslug . '/">' . $gname . '</a>'
+            . '</li>';
+    }
+    $html .= '</ul></li>';
+
+    $html .= '</ul>';
+    return $html;
+}
+
+function get_popular_posts($pdo, $limit = 15)
+{
+    $stmt = $pdo->prepare("SELECT title, slug FROM posts WHERE title NOT LIKE '%Naruto%' ORDER BY views DESC LIMIT :limit");
+    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function get_popular_posts_cached($pdo, $limit = 15)
+{
+    $cacheKey = 'popular_posts_' . $limit;
+    $cached = cache_get_today($cacheKey);
+    if ($cached !== null) return $cached;
+
+    try {
+        $fresh = get_popular_posts($pdo, $limit);
+        cache_set_today($cacheKey, $fresh);
+        return $fresh;
+    } catch (Throwable $e) {
+        $raw = cache_read_raw($cacheKey);
+        if ($raw && isset($raw['value'])) return $raw['value'];
+        return [];
+    }
 }
 
 ?>

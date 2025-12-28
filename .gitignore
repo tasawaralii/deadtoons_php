@@ -2,3 +2,6 @@
 .user.ini
 error_log
 php.ini
+sitemap.xml
+cache/*
+!.gitkeep

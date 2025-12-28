@@ -1,3 +1,8 @@
+<?php
+require_once dirname(__DIR__) . '/db.php';
+require_once dirname(__DIR__) . '/functions.php';
+$menuData = get_menu_data_cached($pdo);
+?>
 <header id="header" class="herald-site-header">
 	<div class="header-middle herald-header-wraper hidden-xs hidden-sm">
 		<div class="container">
@@ -5,110 +10,14 @@
 				<div class="col-lg-12 hel-el">
 					<div class="hel-l herald-go-hor">
 						<div class="site-branding">
-							<h1 class="site-title h1"><a href="/" rel="home"><img
-										class="herald-logo no-lazyload" src="/public/images/logo.png"
+							<h1 class="site-title h1"><a href="/" rel="home"><img class="herald-logo no-lazyload"
+										src="/public/images/logo.png"
 										alt="Dead Toons India - Anime and Cartoon Videos in Hindi Download"></a></h1>
 						</div>
 					</div>
 					<div class="hel-c herald-go-hor">
 						<nav class="main-navigation herald-menu">
-							<ul id="menu-header" class="menu">
-								<li id="menu-item-28"
-									class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-28">
-									<a href="" aria-current="page">Home</a>
-								<li id="menu-item-263"
-									class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-263"><a
-										href="/category/ongoing/">Ongoing</a>
-								<li id="menu-item-264"
-									class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-264"><a
-										href="/category/completed/">Completed</a>
-								<li id="menu-item-24"
-									class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-24"><a
-										href="/category/movie/">Movie</a>
-								<li id="menu-item-27"
-									class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-27"><a
-										href="/category/marvel/">Marvel</a>
-								<li id="menu-item-350"
-									class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-350">
-									<a href="#">Genre</a>
-									<ul class="sub-menu">
-										<li id="menu-item-470"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-470">
-											<a href="/genres/action/">Action</a>
-										<li id="menu-item-1669"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1669">
-											<a href="/genres/adventure/">Adventure</a>
-										<li id="menu-item-472"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-472">
-											<a href="/genres/comedy/">Comedy</a>
-										<li id="menu-item-1672"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1672">
-											<a href="/genres/drama/">Drama</a>
-										<li id="menu-item-1673"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1673">
-											<a href="/genres/ecchi/">Ecchi</a>
-										<li id="menu-item-1674"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1674">
-											<a href="/genres/family/">Family</a>
-										<li id="menu-item-474"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-474">
-											<a href="/genres/fantasy/">Fantasy</a>
-										<li id="menu-item-475"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-475">
-											<a href="/genres/historical/">Historical</a>
-										<li id="menu-item-478"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-478">
-											<a href="/genres/mythology/">Mythology</a>
-										<li id="menu-item-1680"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1680">
-											<a href="/genres/mystery/">Mystery</a>
-										<li id="menu-item-483"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-483">
-											<a href="/genres/supernatural/">Supernatural</a>
-										<li id="menu-item-479"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-479">
-											<a href="/genres/romance/">Romance</a>
-										<li id="menu-item-477"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-477">
-											<a href="/genres/horror/">Horror</a>
-										<li id="menu-item-1676"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1676">
-											<a href="/genres/historical/">Historical</a>
-										<li id="menu-item-1679"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1679">
-											<a href="/genres/kids/">Kids</a>
-										<li id="menu-item-1682"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1682">
-											<a href="/genres/politics/">Politics</a>
-										<li id="menu-item-481"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-481">
-											<a href="/genres/school/">School</a>
-										<li id="menu-item-1684"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1684">
-											<a href="/genres/samurai/">Samurai</a>
-										<li id="menu-item-1686"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1686">
-											<a href="/genres/sci-fi/">Sci-Fi</a>
-										<li id="menu-item-484"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-484">
-											<a href="/genres/suspense/">Suspense</a>
-										<li id="menu-item-471"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-471">
-											<a href="/genres/adventure/">Adventure</a>
-										<li id="menu-item-480"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-480">
-											<a href="/genres/samurai/">Samurai</a>
-										<li id="menu-item-1688"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1688">
-											<a href="/genres/shoujo/">Shoujo</a>
-										<li id="menu-item-482"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-482">
-											<a href="/genres/sports/">Sports</a>
-										<li id="menu-item-1692"
-											class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1692">
-											<a href="/genres/war/">War</a>
-									</ul>
-							</ul>
+							<?php echo build_menu_html($menuData, 'menu-header', 'menu'); ?>
 						</nav>
 					</div>
 					<div class="hel-r herald-go-hor">
@@ -148,79 +57,9 @@
 
 				<div class="hel-r herald-go-hor">
 					<nav class="main-navigation herald-menu">
-						<ul id="menu-header-1" class="menu">
-							<li
-								class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home menu-item-28">
-								<a href="" aria-current="page">Home</a>
-							<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-263"><a
-									href="/category/ongoing/">Ongoing</a>
-							<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-264"><a
-									href="/category/completed/">Completed</a>
-							<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-24"><a
-									href="/category/movie/">Movie</a>
-							<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-27"><a
-									href="/category/marvel/">Marvel</a>
-							<li
-								class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-350">
-								<a href="#">Genre</a>
-								<ul class="sub-menu">
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-470">
-										<a href="/genres/action/">Action</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1669">
-										<a href="/genres/adventure/">Adventure</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-472">
-										<a href="/genres/comedy/">Comedy</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1672">
-										<a href="/genres/drama/">Drama</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1673">
-										<a href="/genres/ecchi/">Ecchi</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1674">
-										<a href="/genres/family/">Family</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-474">
-										<a href="/genres/fantasy/">Fantasy</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-475">
-										<a href="/genres/historical/">Historical</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-478">
-										<a href="/genres/mythology/">Mythology</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1680">
-										<a href="/genres/mystery/">Mystery</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-483">
-										<a href="/genres/supernatural/">Supernatural</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-479">
-										<a href="/genres/romance/">Romance</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-477">
-										<a href="/genres/horror/">Horror</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1676">
-										<a href="/genres/historical/">Historical</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1679">
-										<a href="/genres/kids/">Kids</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1682">
-										<a href="/genres/politics/">Politics</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-481">
-										<a href="/genres/school/">School</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1684">
-										<a href="/genres/samurai/">Samurai</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1686">
-										<a href="/genres/sci-fi/">Sci-Fi</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-484">
-										<a href="/genres/suspense/">Suspense</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-471">
-										<a href="/genres/adventure/">Adventure</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-480">
-										<a href="/genres/samurai/">Samurai</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1688">
-										<a href="/genres/shoujo/">Shoujo</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-482">
-										<a href="/genres/sports/">Sports</a>
-									<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1692">
-										<a href="/genres/war/">War</a>
-								</ul>
-						</ul>
+						<?php echo build_menu_html($menuData, 'menu-header-1', 'menu'); ?>
 					</nav>
 				</div>
-
-
-
 			</div>
 		</div>
 	</div>
@@ -230,8 +69,8 @@
 	<div class="container">
 		<div class="herald-nav-toggle"><i class="fa fa-bars"></i></div>
 		<div class="site-branding mini">
-			<span class="site-title h1"><a href="/" rel="home"><img
-						class="herald-logo-mini no-lazyload" src="/public/images/logo.png"
+			<span class="site-title h1"><a href="/" rel="home"><img class="herald-logo-mini no-lazyload"
+						src="/public/images/logo.png"
 						alt="Dead Toons India - Anime and Cartoon Videos in Hindi Download"></a></span>
 		</div>
 		<div class="herald-menu-popup-search">
@@ -247,75 +86,5 @@
 	</div>
 </div>
 <div class="herald-mobile-nav herald-slide hidden-lg hidden-md">
-	<ul id="menu-header-2" class="herald-mob-nav">
-		<li
-			class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home menu-item-28">
-			<a href="" aria-current="page">Home</a>
-		<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-263"><a
-				href="/category/ongoing/">Ongoing</a>
-		<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-264"><a
-				href="/category/completed/">Completed</a>
-		<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-24"><a
-				href="/category/movie/">Movie</a>
-		<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-27"><a
-				href="/category/marvel/">Marvel</a>
-		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-350"><a
-				href="#">Genre</a>
-			<ul class="sub-menu">
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-470"><a
-						href="/genres/action/">Action</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1669"><a
-						href="/genres/adventure/">Adventure</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-472"><a
-						href="/genres/comedy/">Comedy</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1672"><a
-						href="/genres/drama/">Drama</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1673"><a
-						href="/genres/ecchi/">Ecchi</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1674"><a
-						href="/genres/family/">Family</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-474"><a
-						href="/genres/fantasy/">Fantasy</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-475"><a
-						href="/genres/historical/">Historical</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-478"><a
-						href="/genres/mythology/">Mythology</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1680"><a
-						href="/genres/mystery/">Mystery</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-483"><a
-						href="/genres/supernatural/">Supernatural</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-479"><a
-						href="/genres/romance/">Romance</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-477"><a
-						href="/genres/horror/">Horror</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1676"><a
-						href="/genres/historical/">Historical</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1679"><a
-						href="/genres/kids/">Kids</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1682"><a
-						href="/genres/politics/">Politics</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-481"><a
-						href="/genres/school/">School</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1684"><a
-						href="/genres/samurai/">Samurai</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1686"><a
-						href="/genres/sci-fi/">Sci-Fi</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-484"><a
-						href="/genres/suspense/">Suspense</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-471"><a
-						href="/genres/adventure/">Adventure</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-480"><a
-						href="/genres/samurai/">Samurai</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1688"><a
-						href="/genres/shoujo/">Shoujo</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-482"><a
-						href="/genres/sports/">Sports</a>
-				<li class="menu-item menu-item-type-taxonomy menu-item-object-genre menu-item-1692"><a
-						href="/genres/war/">War</a>
-			</ul>
-	</ul>
-
-
-
-
+	    <?php echo build_menu_html($menuData, 'menu-header-2', 'herald-mob-nav'); ?>
 </div>

@@ -6,7 +6,7 @@ require('db.php');
 $sitemapFile = 'sitemap.xml';
 
 // Base domain
-$baseUrl = "https://".$_SERVER['HTTP_HOST'];
+$baseUrl = "https://deadtoons.org";
 
 // Open the file for writing
 $handle = fopen($sitemapFile, 'w');

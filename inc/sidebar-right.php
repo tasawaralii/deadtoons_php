@@ -20,12 +20,9 @@
         <h4 class="widget-title h6"><span>Popular Posts</span></h4>
         <div class="textwidget">
             <?php
-
-            $posts = $pdo->query("SELECT title,slug FROM posts WHERE title NOT LIKE '%Naruto%' ORDER BY views DESC LIMIT 15;");
-
+            $posts = get_popular_posts_cached($pdo, 15);
             foreach ($posts as $p)
-                echo "<p><a href='/" . $p['slug'] . "/' >" . $p['title'] . "</a></p>";
-
+                echo "<p><a href='/" . htmlspecialchars($p['slug']) . "/' >" . htmlspecialchars($p['title']) . "</a></p>";
             ?>
         </div>
     </div>
