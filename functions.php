@@ -3,7 +3,7 @@
 function get_anime_links($animeId, $season, $type, $honly)
 {
 
-    $api = "https://api.deadbase.host/deadtoons/show-links.php";
+    $api = "https://api.deadbase.host/api/deadtoons/show-links";
 
     if ($animeId != '') {
         if ($type == "tv") {
