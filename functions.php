@@ -3,17 +3,17 @@
 function get_anime_links($animeId, $season, $type, $honly)
 {
 
-    $api = "https://old.deadbase.host";
+    $api = "https://api.deadbase.host/deadtoons/show-links.php";
 
     if ($animeId != '') {
         if ($type == "tv") {
             if ($honly == 1) {
-                $url = $api . '/fulltoons/show-links.php?animeId=' . $animeId . '&season=' . $season . '&type=' . $type . '&hinOnly=1&key=deadtoonszylith';
+                $url = $api . '?animeId=' . $animeId . '&season=' . $season . '&type=' . $type . '&hinOnly=1&key=deadtoonszylith';
             } else {
-                $url = $api . '/fulltoons/show-links.php?animeId=' . $animeId . '&season=' . $season . '&type=' . $type . '&hinOnly=0&key=deadtoonszylith';
+                $url = $api . '?animeId=' . $animeId . '&season=' . $season . '&type=' . $type . '&hinOnly=0&key=deadtoonszylith';
             }
         } else {
-            $url = $api . "/fulltoons/show-links.php?animeId=$animeId&type=$type=&key=deadtoonszylith";
+            $url = $api . "?animeId=$animeId&type=$type=&key=deadtoonszylith";
         }
 
         $content = fetchContent($url);
