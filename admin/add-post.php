@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $note = $p['note'];
             $imgsql = "SELECT file_path FROM images WHERE id = $imgid";
             $img = $pdo->query($imgsql)->fetchColumn();
-            $img = "https://deadtoons.one/content/".$img;
+            $img = "https://deadtoons.org/content/".$img;
             telegram($note, $title, $img, "https://".$_SERVER['HTTP_HOST']."/".$slug,$ep, $movie);
         }
 

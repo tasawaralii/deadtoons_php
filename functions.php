@@ -3,7 +3,7 @@
 function get_anime_links($animeId, $season, $type, $honly)
 {
 
-    $api = "http://deadbase-old.local";
+    $api = "https://old.deadbase.host";
 
     if ($animeId != '') {
         if ($type == "tv") {
