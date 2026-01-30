@@ -5,7 +5,7 @@
             <div class="herald-mod-title">
                 <h4 class="h6 herald-mod-h herald-color">About the author</h4>
             </div>
-            <div class="herald-mod-actions"><a href="/author/<?= $authorSlug ?>/">View All Posts</a>
+            <div class="herald-mod-actions"><a href="/author/<?= $authorSlug ?>">View All Posts</a>
             </div>
         </div>
     </div>

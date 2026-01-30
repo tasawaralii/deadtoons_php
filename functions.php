@@ -425,12 +425,13 @@ function totalPosts($pdo)
 }
 
 
-function posts($excludeFeaturedClause, $limit, $offset, $pdo)
+function posts($featuredPostIds, $limit, $offset, $pdo)
 {
     // To safely append exclude clause, ensure it starts with a valid AND or is empty
     $allowedClause = '';
-    if ($excludeFeaturedClause && preg_match('/^(AND|OR)\s/i', $excludeFeaturedClause)) {
-        $allowedClause = $excludeFeaturedClause;
+    
+    if ($featuredPostIds) {
+        $allowedClause = "AND posts.id NOT in (" . implode(",",$featuredPostIds) . ")";
     }
 
     $stmt = $pdo->prepare("
@@ -496,55 +497,64 @@ function get_gravatar_url($email, $size = 64)
     $hash = md5($email);
     return "https://www.gravatar.com/avatar/$hash?s=$size";
 }
-
-function pagination($total, $pgno, $limit, $domain, $s, $cat)
+function pagination($total, $pgno, $limit)
 {
-    if (!$total == 0) {
-        $output = '<nav class="herald-pagination">';
-
-        if ($pgno > 1) {
-            $output .= '<a class="prev page-numbers" href="' . $domain . $cat . '/page/' . ($pgno - 1) . '/' . $s . '">Previous</a>';
-        }
-        $pages = $total % $limit == 0 ? $total / $limit : ($total / $limit) + 1;
-        $pages = intval($pages);
-        // if pages exists after loop's lower limit
-        if ($pages > 1) {
-            if (($pgno - 3) > 0) {
-                $output = $output . '<a href="' . $domain . $cat . '/page/1/' . $s . '" class="page-numbers' . (($pgno == 1) ? "current" : '') . '">1</a>';
-            }
-            if (($pgno - 3) > 1) {
-                $output = $output . '<span class="page-numbers dots">&hellip;</span>';
-            }
-
-            // Loop for provides links for 2 pages before and after current page
-            for ($i = ($pgno - 2); $i <= ($pgno + 2); $i++) {
-                if ($i < 1)
-                    continue;
-                if ($i > $pages)
-                    break;
-                if ($pgno == $i)
-                    $output = $output . '<span aria-current="page" class="page-numbers current">' . $i . '</span>';
-                else
-                    $output = $output . '<a class="page-numbers" href="' . $domain . $cat . '/page/' . $i . '/' . $s . '">' . $i . '</a>';
-            }
-
-            // if pages exists after loop's upper limit
-            if (($pages - ($pgno + 2)) > 1) {
-                $output = $output . '<span class="page-numbers dots">&hellip;</span>';
-            }
-            if (($pages - ($pgno + 2)) > 0) {
-                if ($pgno == $pages)
-                    $output = $output . '<span aria-current="page" class="page-numbers current">' . $pages . '</span>';
-                else
-                    $output = $output . '<a class="page-numbers" href="' . $domain . $cat . '/page/' . $pages . '/' . $s . '">' . $pages . '</a>';
-            }
-        }
-        if ($pgno != $pages)
-            $output .= '<a class="next page-numbers" href="' . $domain . $cat . '/page/' . ($pgno + 1) . '/' . $s . '">Next</a>';
-        $output .= '</nav>';
-        return $output;
+    if ($total <= 0 || $limit <= 0) {
+        return '';
     }
-    return;
+
+    $pages = (int) ceil($total / $limit);
+    if ($pages <= 1) {
+        return '';
+    }
+
+    // Helper to build URLs while keeping existing GET params
+    $buildUrl = function ($page) {
+        $params = $_GET;
+        $params['page'] = $page;
+        return '?' . http_build_query($params);
+    };
+
+    $output = '<nav class="herald-pagination">';
+
+    // Previous
+    if ($pgno > 1) {
+        $output .= '<a class="prev page-numbers" href="' . $buildUrl($pgno - 1) . '">Previous</a>';
+    }
+
+    // First page + dots
+    if ($pgno > 3) {
+        $output .= '<a class="page-numbers" href="' . $buildUrl(1) . '">1</a>';
+        if ($pgno > 4) {
+            $output .= '<span class="page-numbers dots">&hellip;</span>';
+        }
+    }
+
+    // Pages around current
+    for ($i = max(1, $pgno - 2); $i <= min($pages, $pgno + 2); $i++) {
+        if ($i == $pgno) {
+            $output .= '<span aria-current="page" class="page-numbers current">' . $i . '</span>';
+        } else {
+            $output .= '<a class="page-numbers" href="' . $buildUrl($i) . '">' . $i . '</a>';
+        }
+    }
+
+    // Last page + dots
+    if ($pgno < $pages - 2) {
+        if ($pgno < $pages - 3) {
+            $output .= '<span class="page-numbers dots">&hellip;</span>';
+        }
+        $output .= '<a class="page-numbers" href="' . $buildUrl($pages) . '">' . $pages . '</a>';
+    }
+
+    // Next
+    if ($pgno < $pages) {
+        $output .= '<a class="next page-numbers" href="' . $buildUrl($pgno + 1) . '">Next</a>';
+    }
+
+    $output .= '</nav>';
+
+    return $output;
 }
 
 function article($a, $cat, $sticky = false)
@@ -553,7 +563,7 @@ function article($a, $cat, $sticky = false)
     echo '<div class="row">
 			<div class="col-lg-4 col-md-4 col-sm-4">
 			<div class="herald-post-thumbnail herald-format-icon-middle">
-				<a href="/' . $a['slug'] . '/"
+				<a href="/' . $a['slug'] . '"
 				 title="' . $a['title'] . '">
 					<img width="640" height="360" 
 					src="' . IMAGE_DOMAIN . '/';
@@ -572,11 +582,11 @@ function article($a, $cat, $sticky = false)
     $cat_html = [];
     foreach ($cat_slugs as $index => $cat_slug) {
         $cat_name = $cat_names[$index];
-        $cat_html[] = "<a href=/'$cat/{$cat_slug}/' class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
+        $cat_html[] = "<a href=/$cat/{$cat_slug} class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
     }
     echo implode('<span> &bull; </span>', $cat_html);
     echo '<h2 class="entry-title h3">
-				<a href="/' . $a['slug'] . '/">' . $a['title'] . '</a></h2>
+				<a href="/' . $a['slug'] . '">' . $a['title'] . '</a></h2>
 				<div class="entry-meta">
 					<div class="meta-item herald-date">
 						<span class="updated">' . time_elapsed_string($a['pubDate']) . '</span>
@@ -586,7 +596,7 @@ function article($a, $cat, $sticky = false)
                         <div class="meta-item herald-author">
                         <span class="vcard author">
                         <span class="fn">
-                        <a href="/' . 'author/' . $a['author_slug'] . '/">' . $a['author_display_name'] . '</a>
+                        <a href="/' . 'author/' . $a['author_slug'] . '">' . $a['author_display_name'] . '</a>
                         </span>
                         </span>
                         </div>
@@ -741,7 +751,7 @@ function build_menu_html($menuData, $ulId, $ulClass)
         $slug = htmlspecialchars($d['slug']);
         $name = htmlspecialchars($d['name']);
         $html .= '<li class="menu-item menu-item-type-taxonomy menu-item-object-category">'
-            . '<a href="/category/' . $slug . '/">' . $name . '</a>'
+            . '<a href="/category/' . $slug . '">' . $name . '</a>'
             . '</li>';
     }
 
@@ -754,7 +764,7 @@ function build_menu_html($menuData, $ulId, $ulClass)
         $cslug = htmlspecialchars($c['cat_slug']);
         $cname = htmlspecialchars($c['cat_name']);
         $html .= '<li class="menu-item menu-item-type-taxonomy menu-item-object-genre">'
-            . '<a href="/genres/' . $cslug . '/">' . $cname . '</a>'
+            . '<a href="/category/' . $cslug . '">' . $cname . '</a>'
             . '</li>';
     }
     $html .= '</ul></li>';
@@ -767,7 +777,7 @@ function build_menu_html($menuData, $ulId, $ulClass)
         $gslug = htmlspecialchars($g['genre_slug']);
         $gname = htmlspecialchars($g['genre_name']);
         $html .= '<li class="menu-item menu-item-type-taxonomy menu-item-object-genre">'
-            . '<a href="/genres/' . $gslug . '/">' . $gname . '</a>'
+            . '<a href="/genre/' . $gslug . '">' . $gname . '</a>'
             . '</li>';
     }
     $html .= '</ul></li>';
@@ -788,7 +798,8 @@ function get_popular_posts_cached($pdo, $limit = 15)
 {
     $cacheKey = 'popular_posts_' . $limit;
     $cached = cache_get_today($cacheKey);
-    if ($cached !== null) return $cached;
+    if ($cached !== null)
+        return $cached;
 
     try {
         $fresh = get_popular_posts($pdo, $limit);
@@ -796,7 +807,8 @@ function get_popular_posts_cached($pdo, $limit = 15)
         return $fresh;
     } catch (Throwable $e) {
         $raw = cache_read_raw($cacheKey);
-        if ($raw && isset($raw['value'])) return $raw['value'];
+        if ($raw && isset($raw['value']))
+            return $raw['value'];
         return [];
     }
 }

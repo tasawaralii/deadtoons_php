@@ -38,11 +38,11 @@ $related = $pdo->query($sql)->fetchAll();
         <article class="herald-lay-f herald-lay-f1">
 <div class="herald-ovrld">		
         <div class="herald-post-thumbnail">
-        <a href="/' . $r['slug'] . "/" . '" title="' . $r['title'] . '"><img width="300" height="200" src=' . $imgUrl . ' class="attachment-herald-lay-f1 size-herald-lay-f1 wp-post-image" alt="" /></a>
+        <a href="/' . $r['slug'] . '" title="' . $r['title'] . '"><img width="300" height="200" src=' . $imgUrl . ' class="attachment-herald-lay-f1 size-herald-lay-f1 wp-post-image" alt="" /></a>
     </div>
 
 <div class="entry-header herald-clear-blur">
-    <h2 class="entry-title h6"><a href="/' . $r['slug'] . '/">' . $r['title'] . '</a></h2>
+    <h2 class="entry-title h6"><a href="/' . $r['slug'] . '">' . $r['title'] . '</a></h2>
         </div>
 </div>
 

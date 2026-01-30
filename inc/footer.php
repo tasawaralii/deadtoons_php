@@ -38,7 +38,7 @@
                             available in internet.</p>
                         <p style="text-align: center;">If you want to remove any post from this website check out our
                         </p>
-                        <h4 style="text-align: center;"><a class="dti-btn" href="/dmca/">DMCA Page</a></h4>
+                        <h4 style="text-align: center;"><a class="dti-btn" href="/dmca">DMCA Page</a></h4>
                     </div>
                 </div>
             </div>
@@ -54,11 +54,11 @@
                             <ul id="menu-seco" class="menu">
                                 <li id="menu-item-751"
                                     class="menu-item menu-item-type-post_type menu-item-object-page menu-item-751">
-                                    <a href="/about/">About</a>
+                                    <a href="/about">About</a>
                                 </li>
                                 <li id="menu-item-749"
                                     class="menu-item menu-item-type-post_type menu-item-object-page menu-item-privacy-policy menu-item-749">
-                                    <a rel="privacy-policy" href="/privacy-policy/">Privacy
+                                    <a rel="privacy-policy" href="/privacy-policy">Privacy
                                         Policy</a>
                                 </li>
                                 <li id="menu-item-762"
@@ -71,7 +71,7 @@
 
                     <div class="hel-c herald-go-hor">
                         <div class="herald-copyright">
-                            <p style="text-align: center;">Copyright DeadToons © 2016 - 2025.</p>
+                            <p style="text-align: center;">Copyright DeadToons © 2016 - 2026.</p>
                         </div>
                     </div>
                 </div>

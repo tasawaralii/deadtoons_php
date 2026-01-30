@@ -1,4 +1,7 @@
 <?php
+
+$slug = $params['slug'];
+$post = single($slug, $pdo);
 $ispost = $post['post_type'] == "post";
 $anime_name = explode(" (", $post['title']);
 $anime_name = trim($anime_name[0]);
@@ -13,7 +16,7 @@ require_once "inc/head.php"
 	?>
 
 <body
-	class="post-template-default single single-post postid-<?php echo $post['id'] ?> single-format-standard wp-embed-responsive herald-boxed herald-v_2_6_2">
+	class="post-template-default single single-post postid-<?php echo $post['id'] ?> single-format-standard wp-embed-responsive herald-boxed">
 
 	<?php
 	require('inc/header.php');

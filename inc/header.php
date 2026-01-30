@@ -1,6 +1,5 @@
 <?php
-require_once dirname(__DIR__) . '/db.php';
-require_once dirname(__DIR__) . '/functions.php';
+
 $menuData = get_menu_data_cached($pdo);
 ?>
 <header id="header" class="herald-site-header">
@@ -24,7 +23,7 @@ $menuData = get_menu_data_cached($pdo);
 						<div class="herald-menu-popup-search">
 							<span class="fa fa-search"></span>
 							<div class="herald-in-popup">
-								<form class="herald-search-form" action="/" method="get">
+								<form class="herald-search-form" action="/search" method="get">
 									<input name="s" class="herald-search-input" type="text" value=""
 										placeholder="Type here to search..." /><button type="submit"
 										class="herald-search-submit"></button>
@@ -76,7 +75,7 @@ $menuData = get_menu_data_cached($pdo);
 		<div class="herald-menu-popup-search">
 			<span class="fa fa-search"></span>
 			<div class="herald-in-popup">
-				<form class="herald-search-form" action="/" method="get">
+				<form class="herald-search-form" action="/search" method="get">
 					<input name="s" class="herald-search-input" type="text" value=""
 						placeholder="Type here to search..." /><button type="submit"
 						class="herald-search-submit"></button>

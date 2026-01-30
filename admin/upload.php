@@ -1,18 +1,4 @@
 <?php
-
-// if (extension_loaded('imagick')) {
-//     echo "Imagick is available.";
-// } else {
-//     echo "Imagick is not available.";
-// }
-
-// if (class_exists('Imagick')) {
-//     echo "Imagick is installed and ready to use.";
-// } else {
-//     echo "Imagick is not installed.";
-// }
-
-
 function resize_image($inputFile, $outputFile, $ex) {
     try {
         // Create a new Imagick object and read the input file

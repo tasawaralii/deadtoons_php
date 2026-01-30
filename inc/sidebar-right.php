@@ -22,7 +22,7 @@
             <?php
             $posts = get_popular_posts_cached($pdo, 15);
             foreach ($posts as $p)
-                echo "<p><a href='/" . htmlspecialchars($p['slug']) . "/' >" . htmlspecialchars($p['title']) . "</a></p>";
+                echo "<p><a href='/" . htmlspecialchars($p['slug']) . "' >" . htmlspecialchars($p['title']) . "</a></p>";
             ?>
         </div>
     </div>
