@@ -9,7 +9,7 @@ $router = new Router();
 
 $router->post("/post-comment", "ajax/comments-post.php");
 
-$router->get("/", "home.php");
+$router->get("/", "views/home.php");
 $router->get("/search", "views/search.php");
 $router->get("/genre/{genre}", "views/genre.php");
 $router->get("/category/{category}", "views/category.php");
