@@ -7,11 +7,13 @@ require_once 'functions.php';
 
 $router = new Router();
 
+$router->post("/post-comment", "ajax/comments-post.php");
+
 $router->get("/", "home.php");
-$router->get("/search", "search.php");
-$router->get("/genre/{genre}", "genre.php");
-$router->get("/category/{category}", "category.php");
-$router->get("/author/{author}", "author.php");
-$router->get("/{slug}", "single.php");
+$router->get("/search", "views/search.php");
+$router->get("/genre/{genre}", "views/genre.php");
+$router->get("/category/{category}", "views/category.php");
+$router->get("/author/{author}", "views/author.php");
+$router->get("/{slug}", "views/single.php");
 
 $router->resolve();

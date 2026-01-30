@@ -2,8 +2,6 @@
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    require 'db.php';
-
     $comment = $_POST['comment'];
     $comment = trim($comment);
 

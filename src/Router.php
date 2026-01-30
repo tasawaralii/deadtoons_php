@@ -40,7 +40,7 @@ class Router
                     ARRAY_FILTER_USE_KEY
                 );
 
-                require __DIR__ . '/../views/' . $view;
+                require __DIR__ . '/../' . $view;
                 return;
             }
         }

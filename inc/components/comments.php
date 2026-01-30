@@ -20,7 +20,7 @@ echo '<div class="herald-mod-wrap"><div class="herald-mod-head "><div class="her
 echo '<div class="herald-gray-area"><span class="herald-fake-button herald-comment-form-open">Click here to post a comment</span></div>';
 echo '<div id="respond" class="comment-respond">';
 echo '<h3 id="reply-title" class="comment-reply-title"><small><a rel="nofollow" id="cancel-comment-reply-link" href="#" style="display:none;">Cancel reply</a></small></h3>';
-echo '<form action="/comments-post.php" method="post" id="commentform" class="comment-form">';
+echo '<form action="/post-comment" method="post" id="commentform" class="comment-form">';
 echo '<p class="comment-form-comment"><label for="comment">Comment</label><textarea id="comment" name="comment" cols="45" rows="8" aria-required="true"></textarea></p>';
 echo '<p class="comment-form-author"><label for="author">Name <span class="required">*</span></label><input id="author" name="author" type="text" value="' . $author . '" size="30" maxlength="245" autocomplete="name" required></p>';
 echo '<p class="comment-form-email"><label for="email">Email <span class="required">*</span></label><input id="email" name="email" type="email" value="' . $email . '" size="30" maxlength="100" autocomplete="email" required></p>';
