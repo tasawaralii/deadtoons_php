@@ -1,5 +1,5 @@
 <?php
-require('../db.php');
+require('db.php');
 require('functions.php');
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {

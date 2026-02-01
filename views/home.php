@@ -24,7 +24,7 @@ $totalPosts = totalPosts($pdo);
 <?php
 
 $keywords = "Deadtoonsindia, best website to download anime in hindi, deadtoons, dead toons, dead toons india, anime in hindi, watch free anime in hindi";
-
+$title = "Dead Toons India - Best website to Download Anime in Hindi";
 require_once "inc/head.php"
 	?>
 

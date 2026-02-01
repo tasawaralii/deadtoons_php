@@ -11,6 +11,6 @@ include 'header.php';
 
     <!-- Content -->
     <div class="content">
-        </div>
+    </div>
 </div>
 <?php include 'footer.php'; ?>

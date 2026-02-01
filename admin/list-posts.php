@@ -1,5 +1,5 @@
 <?php
-require('../db.php');
+require('db.php');
 require('functions.php');
 
 // Fetch posts from the database
