@@ -156,7 +156,7 @@ include 'header.php';
                 <?php foreach ($comments as $comment): ?>
                     <tr id="<?php echo $comment['com_id']; ?>">
                         <th scope="row">
-                            <?php echo '<a href="../../' . $comment['slug'] . '/#comment-' . $comment['com_id'] . '">' . ($comment['title']) . '</a>'; ?>
+                            <?php echo '<a href="../../' . $comment['slug'] . '#comment-' . $comment['com_id'] . '">' . ($comment['title']) . '</a>'; ?>
                         </th>
                         <td><?php echo htmlspecialchars($comment['com_author']); ?></td>
                         <td><?php echo htmlspecialchars($comment['com_email']); ?></td>
