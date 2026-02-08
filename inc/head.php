@@ -3,8 +3,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title><?php echo ($title ? $title . " | " : '') . TITLE ?></title>
     <meta name="description" content="<?= DESCRIPTION ?>">
-    <meta name="keywords"
-        content=<?= $keywords ?>>
+    <meta name="keywords" content=<?= $keywords ?>>
     <meta name='robots' content='max-image-preview:large' />
     <link rel='dns-prefetch' href='//fonts.googleapis.com' />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -382,9 +381,10 @@
         type='text/css' media='all' />
     <link rel='stylesheet' href='/css/min.css' type='text/css' media='all' />
     <link rel='stylesheet' href="/css/main-inline.css" type="text/css" />
-    <script type="text/javascript" src="/js/jquery.min.js" ?>" id="jquery - core - js"></script>
-    <script type="text/javascript" src="/js/jquery-migrate.min.js" ?>"
-        id = "jquery-migrate-js" ></script>
+    <link rel='stylesheet' href="/css/main-inline.css" type="text/css" />
+    <link rel='stylesheet' href="/css/custom.css" type="text/css" />
+    <script type="text/javascript" src="/js/jquery.min.js" id="jquery - core - js"></script>
+    <script type="text/javascript" src="/js/jquery-migrate.min.js" id="jquery-migrate-js"></script>
 
 
     <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />

@@ -3,7 +3,7 @@
 function get_anime_links($animeId, $season, $type, $honly)
 {
 
-    $api = $_ENV['API_URL'];
+    $api = $_ENV['API_URL'] . "/show-links";
 
     if ($animeId != '') {
         if ($type == "tv") {
@@ -199,6 +199,14 @@ function author_posts($author, $limit, $offset, $pdo)
     return ['posts' => $posts, 'total' => $total];
 }
 
+
+function makeDynamicPostBody($deadbase_id)
+{
+    $api = $_ENV['API_URL'];
+
+    $post_code = fetchContent($api . "/post-code?deadbase_slug=$deadbase_id");
+    return $post_code;
+}
 
 function single($slug, $pdo)
 {
@@ -430,9 +438,9 @@ function posts($featuredPostIds, $limit, $offset, $pdo)
 {
     // To safely append exclude clause, ensure it starts with a valid AND or is empty
     $allowedClause = '';
-    
+
     if ($featuredPostIds) {
-        $allowedClause = "AND posts.id NOT in (" . implode(",",$featuredPostIds) . ")";
+        $allowedClause = "AND posts.id NOT in (" . implode(",", $featuredPostIds) . ")";
     }
 
     $stmt = $pdo->prepare("

@@ -3,7 +3,12 @@
 
         <?php
 
-        $parsed_content = parse_shortcodes($post['content']);
+        if($post['is_dynamic']) {
+            $parsed_content = makeDynamicPostBody($post['deadbase_id']);
+        } else {
+            $parsed_content = parse_shortcodes($post['content']);
+        }
+
 
         echo $parsed_content;
 

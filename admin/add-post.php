@@ -302,7 +302,7 @@ function syncEditors() {
 
                 // Function to fetch images and display them in the modal
                 function fetchImages() {
-                    fetch('../show-images.php')
+                    fetch('/admin/show-images.php')
                         .then(response => response.json())
                         .then(data => {
                             imageList.innerHTML = '';
