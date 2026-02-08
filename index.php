@@ -16,4 +16,5 @@ $router->get("/category/{category}", "views/category.php");
 $router->get("/author/{author}", "views/author.php");
 $router->get("/{slug}", "views/single.php");
 
+$router->post("/upload/image", "services/upload.php");
 $router->resolve();

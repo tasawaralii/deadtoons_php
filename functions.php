@@ -96,6 +96,7 @@ function resize_image($inputFile, $outputFile, $ex)
 
         return 'success';
     } catch (Exception $e) {
+        print_r($e);
         return 'error';
     }
 }
@@ -447,7 +448,7 @@ function posts($featuredPostIds, $limit, $offset, $pdo)
         LEFT JOIN posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
         LEFT JOIN categories ON categories.cat_id = posts_tag.tag_id
         LEFT JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post' AND posts.is_dynamic = 0 $allowedClause
+        WHERE posts.post_type = 'post' $allowedClause
         GROUP BY posts.id, images.file_path
         ORDER BY posts.pubDate DESC
         LIMIT :limit OFFSET :offset

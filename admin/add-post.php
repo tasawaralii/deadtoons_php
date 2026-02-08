@@ -92,7 +92,7 @@ include 'header.php';
 
         <hr>
 
-        <form id="uploadForm" action="/upload.php" method="post" enctype="multipart/form-data">
+        <form id="uploadForm" action="/upload/image" method="post" enctype="multipart/form-data">
             <input type="hidden" name="origin" value="deadtoons">
             <label>Select image:</label>
             <input type="file" name="fileToUpload" id="fileToUpload">
