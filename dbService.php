@@ -1,30 +1,159 @@
 <?php
+
+// View
+
+// -- Base view with all post data joined
+"CREATE VIEW view_posts AS
+SELECT 
+p.id,
+p.title,
+p.slug,
+p.is_dynamic,
+p.deadbase_id,
+p.pubDate,
+p.content,
+p.sticky,
+p.post_type,
+p.views,
+
+i.file_path,
+
+a.author_slug,
+a.author_display_name,
+a.author_email,
+a.author_quote,
+
+COALESCE(cmt.comment_count, 0) AS comments,
+
+COALESCE(
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT('slug', CONCAT('/category/', c.cat_slug), 'name', c.cat_name)
+    )
+    FROM post_categories pc
+    JOIN categories c ON c.cat_id = pc.category_id
+    WHERE pc.post_id = p.id
+    ), JSON_ARRAY()
+) AS categories,
+
+COALESCE(
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT('slug', CONCAT('/genre/', g.genre_slug), 'name', g.genre_name)
+    )
+    FROM post_genres pg
+    JOIN genres g ON g.genre_id = pg.genre_id
+    WHERE pg.post_id = p.id
+    ), JSON_ARRAY()
+) AS genres,
+
+COALESCE(
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT('slug', CONCAT('/tag/', t.tag_slug), 'name', t.tag_name)
+    )
+    FROM posts_tag pt
+    JOIN tags t ON t.tag_id = pt.tag_id
+    WHERE pt.post_id = p.id
+    ), JSON_ARRAY()
+) AS tags
+
+FROM posts p
+LEFT JOIN images i ON i.id = p.thumbnail
+LEFT JOIN authors a ON a.author_id = p.author
+LEFT JOIN (
+SELECT post_id, COUNT(*) AS comment_count
+FROM comments
+WHERE com_status = 1
+GROUP BY post_id
+) cmt ON cmt.post_id = p.id
+WHERE p.post_type = 'post'";
 function author_posts($author, $limit, $offset, $pdo)
 {
     $stmt = $pdo->prepare("
-        SELECT p.id
-        FROM posts p
-        JOIN authors a ON a.author_id = p.author
-        WHERE p.post_type = 'post' AND a.author_slug = :author
-        ORDER BY p.pubDate DESC LIMIT :limit OFFSET :offset
+        SELECT 
+        id, title, slug, comments, categories, pubDate, file_path, author_slug, author_display_name, author_email, author_quote
+        FROM view_posts
+        WHERE author_slug = :author
+        ORDER BY pubDate DESC 
+        LIMIT :limit OFFSET :offset
     ");
     $stmt->bindParam(':author', $author, PDO::PARAM_STR);
     $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
-
-    $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    $posts = posts_by_ids($pdo, $ids, true);
+    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $totalStmt = $pdo->prepare("
-        SELECT COUNT(*) AS total FROM posts
-        JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post' AND authors.author_slug = :author
+        SELECT COUNT(*) FROM view_posts WHERE author_slug = :author
     ");
     $totalStmt->execute([':author' => $author]);
     $total = $totalStmt->fetchColumn();
 
     return ['posts' => $posts, 'total' => $total];
+}
+
+function category($cat, $limit, $offset, $pdo)
+{
+    $stmt = $pdo->prepare("
+        SELECT 
+            id, title, slug, comments, categories, pubDate, file_path, author_slug,author_display_name 
+        FROM view_posts p
+        JOIN post_categories pc ON pc.post_id = p.id
+        JOIN categories c ON c.cat_id = pc.category_id
+        WHERE c.cat_slug = :cat
+        ORDER BY p.pubDate DESC 
+        LIMIT :limit OFFSET :offset
+    ");
+    $stmt->bindParam(':cat', $cat, PDO::PARAM_STR);
+    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $totalStmt = $pdo->prepare("
+        SELECT COUNT(DISTINCT p.id)
+        FROM view_posts p
+        JOIN post_categories pc ON pc.post_id = p.id
+        JOIN categories c ON c.cat_id = pc.category_id
+        WHERE c.cat_slug = :cat
+    ");
+    $totalStmt->execute([':cat' => $cat]);
+    $total = $totalStmt->fetchColumn();
+
+    return ['posts' => $posts, 'total' => $total];
+}
+
+function posts($excludeIds, $limit, $offset, $pdo)
+{
+    $excludeIds = array_values(array_filter(array_map('intval', (array) $excludeIds)));
+    $excludeSql = '';
+    $params = [];
+
+    if (!empty($excludeIds)) {
+        $placeholders = [];
+        foreach ($excludeIds as $i => $id) {
+            $key = ':ex' . $i;
+            $placeholders[] = $key;
+            $params[$key] = $id;
+        }
+        $excludeSql = 'AND id NOT IN (' . implode(',', $placeholders) . ')';
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT 
+            id, title, slug, comments, categories, pubDate, file_path, author_slug,author_display_name 
+        FROM view_posts
+        WHERE 1=1 $excludeSql
+        ORDER BY pubDate DESC 
+        LIMIT :limit OFFSET :offset
+    ");
+
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value, PDO::PARAM_INT);
+    }
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function tag($tag, $limit, $offset, $pdo)
@@ -58,24 +187,7 @@ function tag($tag, $limit, $offset, $pdo)
 
 function single($slug, $pdo)
 {
-    $stmt = $pdo->prepare("
-        SELECT p.*,
-            images.file_path,
-            a.author_slug,a.author_email,a.author_display_name,a.author_quote,
-            JSON_ARRAYAGG(
-                JSON_OBJECT(
-                    'slug', CONCAT('/category/',c.cat_slug),
-                    'name',c.cat_name
-                )
-            ) as categories
-        FROM posts p
-        LEFT JOIN post_categories pc ON pc.post_id = p.id
-        LEFT JOIN categories c ON c.cat_id = pc.category_id
-        LEFT JOIN images ON images.id = p.thumbnail
-        LEFT JOIN authors a ON a.author_id = p.author 
-        WHERE p.slug = :slug
-        GROUP BY p.id;
-    ");
+    $stmt = $pdo->prepare("SELECT * FROM view_posts p WHERE p.slug = :slug");
     $stmt->execute([':slug' => $slug]);
     $res = $stmt->fetch();
 
@@ -84,94 +196,99 @@ function single($slug, $pdo)
 
     return $res;
 }
-function category($cat, $limit, $offset, $pdo)
-{
-    $stmt = $pdo->prepare("
-        SELECT DISTINCT p.id
-        FROM posts p
-        JOIN post_categories pc ON pc.post_id = p.id
-        JOIN categories c ON c.cat_id = pc.category_id
-        WHERE p.post_type = 'post' AND c.cat_slug = :cat
-        ORDER BY p.pubDate DESC LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindParam(':cat', $cat, PDO::PARAM_STR);
-    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    $posts = posts_by_ids($pdo, $ids, true);
-
-    $totalStmt = $pdo->prepare("
-    SELECT COUNT(*) as total
-    FROM posts p
-    JOIN post_categories pc ON pc.post_id = p.id
-    JOIN categories c ON c.cat_id = pc.category_id
-    WHERE p.post_type = 'post' AND c.cat_slug = :cat
-    ");
-    $totalStmt->execute([':cat' => $cat]);
-    $total = $totalStmt->fetchColumn();
-
-    return ['posts' => $posts, 'total' => $total];
-}
 function search($s, $limit, $offset, $pdo)
 {
     $s = trim($s);
     $escaped = preg_quote($s);
     $searchTerm = '\\b' . $escaped . '\\b';
 
-    $stmt1 = $pdo->prepare("
-        SELECT p.id
-        FROM posts p
-        WHERE p.post_type = 'post' AND p.title RLIKE :search
-        ORDER BY p.pubDate DESC
-    ");
-    $stmt1->execute([':search' => $searchTerm]);
-    $p1ids = array_map('intval', $stmt1->fetchAll(PDO::FETCH_COLUMN));
-    $p1idsex = $p1ids ? "AND p.id NOT IN (" . implode(',', $p1ids) . ")" : "";
-
-    $sql2 = "
-        SELECT p.id
-        FROM posts p
-        WHERE p.post_type = 'post' AND p.title LIKE :like $p1idsex
-        ORDER BY p.pubDate DESC
-    ";
-    $stmt2 = $pdo->prepare($sql2);
-    $stmt2->execute([':like' => "%$s%"]);
-    $p2ids = array_map('intval', $stmt2->fetchAll(PDO::FETCH_COLUMN));
-    $all_ids = array_merge($p1ids, $p2ids);
-    $p2idsex = $all_ids ? "AND p.id NOT IN (" . implode(',', $all_ids) . ")" : "";
-
     $terms = explode(" ", $s);
     $termsClause = '%' . implode('%', $terms) . '%';
-    $sql3 = "
-        SELECT p.id
-        FROM posts p
-        WHERE p.post_type = 'post' AND p.title LIKE :terms $p2idsex
-        ORDER BY p.pubDate DESC
-    ";
-    $stmt3 = $pdo->prepare($sql3);
-    $stmt3->execute([':terms' => $termsClause]);
-    $p3ids = array_map('intval', $stmt3->fetchAll(PDO::FETCH_COLUMN));
-    $all_ids = array_merge($p1ids, $p2ids, $p3ids);
-    $p3idsex = $all_ids ? "AND p.id NOT IN (" . implode(',', $all_ids) . ")" : "";
+    $likePattern = "%$s%";
 
-    $sql4 = "
-        SELECT p.id
-        FROM posts p
-        WHERE p.post_type = 'post' AND p.content RLIKE :search $p3idsex
-        ORDER BY p.pubDate DESC
-    ";
-    $stmt4 = $pdo->prepare($sql4);
-    $stmt4->execute([':search' => $searchTerm]);
-    $p4ids = array_map('intval', $stmt4->fetchAll(PDO::FETCH_COLUMN));
+    // Get distinct IDs with priority, then join to view_posts
+    $stmt = $pdo->prepare("
+        SELECT 
+            vp.id, vp.title, vp.slug, vp.comments, vp.categories, 
+            vp.pubDate, vp.file_path, vp.author_slug, vp.author_display_name
+        FROM (
+            SELECT id, 1 as priority, pubDate
+            FROM view_posts
+            WHERE title RLIKE :search1
+            
+            UNION
+            
+            SELECT id, 2 as priority, pubDate
+            FROM view_posts
+            WHERE title LIKE :like
+            AND id NOT IN (SELECT id FROM view_posts WHERE title RLIKE :search2)
+            
+            UNION
+            
+            SELECT id, 3 as priority, pubDate
+            FROM view_posts
+            WHERE title LIKE :terms
+            AND id NOT IN (
+                SELECT id FROM view_posts 
+                WHERE title RLIKE :search3 OR title LIKE :like2
+            )
+            
+            UNION
+            
+            SELECT id, 4 as priority, pubDate
+            FROM view_posts
+            WHERE content RLIKE :search4
+            AND id NOT IN (
+                SELECT id FROM view_posts 
+                WHERE title RLIKE :search5 OR title LIKE :like3 OR title LIKE :terms2
+            )
+            
+            ORDER BY priority ASC, pubDate DESC
+            LIMIT :limit OFFSET :offset
+        ) as ranked
+        JOIN view_posts vp ON vp.id = ranked.id
+        ORDER BY ranked.priority ASC, ranked.pubDate DESC
+    ");
 
-    $all_ids = array_values(array_unique(array_merge($p1ids, $p2ids, $p3ids, $p4ids)));
-    $paged_ids = array_slice($all_ids, $offset, $limit);
-    $posts = posts_by_ids($pdo, $paged_ids, true);
+    $stmt->bindParam(':search1', $searchTerm, PDO::PARAM_STR);
+    $stmt->bindParam(':search2', $searchTerm, PDO::PARAM_STR);
+    $stmt->bindParam(':search3', $searchTerm, PDO::PARAM_STR);
+    $stmt->bindParam(':search4', $searchTerm, PDO::PARAM_STR);
+    $stmt->bindParam(':search5', $searchTerm, PDO::PARAM_STR);
+    $stmt->bindParam(':like', $likePattern, PDO::PARAM_STR);
+    $stmt->bindParam(':like2', $likePattern, PDO::PARAM_STR);
+    $stmt->bindParam(':like3', $likePattern, PDO::PARAM_STR);
+    $stmt->bindParam(':terms', $termsClause, PDO::PARAM_STR);
+    $stmt->bindParam(':terms2', $termsClause, PDO::PARAM_STR);
+    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+
+    $stmt->execute();
+    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get total count
+    $countStmt = $pdo->prepare("
+        SELECT COUNT(DISTINCT id) as total FROM (
+            SELECT id FROM view_posts WHERE title RLIKE :search1
+            UNION
+            SELECT id FROM view_posts WHERE title LIKE :like
+            UNION
+            SELECT id FROM view_posts WHERE title LIKE :terms
+            UNION
+            SELECT id FROM view_posts WHERE content RLIKE :search2
+        ) as search_results
+    ");
+
+    $countStmt->bindParam(':search1', $searchTerm, PDO::PARAM_STR);
+    $countStmt->bindParam(':search2', $searchTerm, PDO::PARAM_STR);
+    $countStmt->bindParam(':like', $likePattern, PDO::PARAM_STR);
+    $countStmt->bindParam(':terms', $termsClause, PDO::PARAM_STR);
+    $countStmt->execute();
+    $total = $countStmt->fetchColumn();
 
     return [
         'posts' => $posts,
-        'total' => count($all_ids)
+        'total' => $total
     ];
 }
 
@@ -184,8 +301,9 @@ function totalPosts($pdo)
 function genre($genre, $limit, $offset, $pdo)
 {
     $stmt = $pdo->prepare(
-        "SELECT p.id 
-        FROM posts p
+        "SELECT
+            id, title, slug, comments, genres as categories, pubDate, file_path, author_slug,author_display_name 
+        FROM view_posts p
         JOIN post_genres pg ON pg.post_id = p.id
         JOIN genres g ON g.genre_id = pg.genre_id
         WHERE g.genre_slug = :genre
@@ -197,9 +315,7 @@ function genre($genre, $limit, $offset, $pdo)
     $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
-    $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    $posts = posts_by_ids($pdo, $ids, true);
+    $posts = $stmt->fetchAll();
 
     $totalStmt = $pdo->prepare("
         SELECT COUNT(*) as total
@@ -214,122 +330,12 @@ function genre($genre, $limit, $offset, $pdo)
     return ['posts' => $posts, 'total' => $total];
 }
 
-function posts($excludeIds, $limit, $offset, $pdo)
-{
-    $excludeIds = array_values(array_filter(array_map('intval', (array) $excludeIds)));
-    $excludeSql = '';
-    $params = [];
-    if (!empty($excludeIds)) {
-        $placeholders = [];
-        foreach ($excludeIds as $i => $id) {
-            $key = ':ex' . $i;
-            $placeholders[] = $key;
-            $params[$key] = $id;
-        }
-        $excludeSql = 'AND p.id NOT IN (' . implode(',', $placeholders) . ')';
-    }
-
-    $stmt = $pdo->prepare(
-        "SELECT p.id
-        FROM posts p
-        WHERE p.post_type = 'post' $excludeSql
-        ORDER BY p.pubDate DESC LIMIT :limit OFFSET :offset
-    "
-    );
-    foreach ($params as $key => $value) {
-        $stmt->bindValue($key, $value, PDO::PARAM_INT);
-    }
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    return posts_by_ids($pdo, $ids, true);
-}
-
-function posts_by_ids($pdo, $ids, $orderByIds = false)
-{
-    $ids = array_values(array_unique(array_filter(array_map('intval', (array) $ids))));
-    if (empty($ids)) {
-        return [];
-    }
-
-    $placeholders = [];
-    $params = [];
-    foreach ($ids as $i => $id) {
-        $key = ':id' . $i;
-        $placeholders[] = $key;
-        $params[$key] = $id;
-    }
-
-    $orderSql = 'p.pubDate DESC';
-    if ($orderByIds) {
-        $orderSql = 'FIELD(p.id, ' . implode(',', $ids) . ')';
-    }
-
-    $stmt = $pdo->prepare(
-        "SELECT 
-            p.id,
-            p.title,
-            p.pubDate,
-            p.slug,
-            i.file_path,
-
-            COALESCE(cmt.comment_count, 0) AS comments,
-
-            a.author_slug,
-            a.author_display_name,
-            a.author_email,
-            a.author_quote,
-
-            COALESCE(cat.categories, JSON_ARRAY()) AS categories
-
-        FROM posts p
-
-        JOIN images i 
-            ON i.id = p.thumbnail
-
-        LEFT JOIN authors a 
-            ON a.author_id = p.author
-
-        LEFT JOIN (
-            SELECT post_id, COUNT(*) AS comment_count
-            FROM comments
-            WHERE com_status = 1
-            GROUP BY post_id
-        ) cmt ON cmt.post_id = p.id
-
-        LEFT JOIN (
-            SELECT 
-                pc.post_id,
-                JSON_ARRAYAGG(
-                    JSON_OBJECT(
-                        'slug', CONCAT('/category/' ,c.cat_slug),
-                        'name', c.cat_name
-                    )
-                ) AS categories
-            FROM post_categories pc
-            JOIN categories c 
-                ON c.cat_id = pc.category_id
-            GROUP BY pc.post_id
-        ) cat ON cat.post_id = p.id
-
-        WHERE p.post_type = 'post' AND p.id IN (" . implode(',', $placeholders) . ")
-        ORDER BY $orderSql
-    "
-    );
-
-    $stmt->execute($params);
-
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
 function featured($pdo)
 {
-    $stmt = $pdo->prepare("SELECT p.id FROM posts p WHERE p.sticky = 1");
+    $stmt = $pdo->prepare("SELECT 
+        id, title, slug, comments, categories, pubDate, file_path, author_slug,author_display_name 
+    FROM view_posts p WHERE p.sticky = 1");
     $stmt->execute();
-    $featuredIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    $featuredPosts = posts_by_ids($pdo, $featuredIds);
+    $featuredPosts = $stmt->fetchAll();
     return $featuredPosts;
-}   
+}
