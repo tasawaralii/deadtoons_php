@@ -40,7 +40,6 @@ function fetchContent($url)
     return $response;
 }
 
-
 function parse_shortcodes($content)
 {
     // Regular expression to match shortcodes
@@ -56,7 +55,6 @@ function parse_shortcodes($content)
         return get_anime_links($animeId, $season, $type, $honly);
     }, $content);
 }
-
 
 function resize_image($inputFile, $outputFile, $ex)
 {
@@ -101,105 +99,6 @@ function resize_image($inputFile, $outputFile, $ex)
     }
 }
 
-
-function tag($tag, $limit, $offset, $pdo)
-{
-    $stmt = $pdo->prepare("
-        SELECT 
-            posts.*,
-            images.file_path,
-            authors.author_slug,
-            authors.author_email,
-            authors.author_display_name,
-            authors.author_quote,
-            GROUP_CONCAT(DISTINCT categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(DISTINCT categories.cat_name) AS cat_names,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            GROUP_CONCAT(DISTINCT tags.tag_slug) AS tag_slugs,
-            GROUP_CONCAT(DISTINCT tags.tag_name) AS tag_names
-        FROM 
-            posts
-        JOIN 
-            images ON images.id = posts.thumbnail
-        LEFT JOIN 
-            posts_tag ON posts_tag.post_id = posts.id
-        LEFT JOIN 
-            categories ON categories.cat_id = posts_tag.tag_id AND posts_tag.tag_type = 2
-        LEFT JOIN 
-            tags ON tags.tag_id = posts_tag.tag_id AND posts_tag.tag_type = 1
-        LEFT JOIN
-            authors ON authors.author_id = posts.author 
-        WHERE 
-            tags.tag_slug = :tag
-        GROUP BY 
-            posts.id, images.file_path, authors.author_slug, authors.author_email, 
-            authors.author_display_name, authors.author_quote
-        LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindParam(':tag', $tag, PDO::PARAM_STR);
-    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $totalStmt = $pdo->prepare("
-        SELECT COUNT(*) AS total FROM posts 
-        JOIN posts_tag ON posts_tag.post_id = posts.id 
-        JOIN tags ON tags.tag_id = posts_tag.tag_id 
-        WHERE tags.tag_slug = :tag
-    ");
-    $totalStmt->execute([':tag' => $tag]);
-    $total = $totalStmt->fetchColumn();
-
-    return ['posts' => $res, 'total' => $total];
-}
-
-
-function author_posts($author, $limit, $offset, $pdo)
-{
-    $stmt = $pdo->prepare("
-        SELECT 
-            posts.id, posts.title, posts.pubDate, posts.slug, 
-            images.file_path,
-            GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(categories.cat_name) AS cat_names,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            authors.author_slug,authors.author_display_name,authors.author_email,authors.author_quote
-        FROM
-            posts
-        JOIN 
-            images ON images.id = posts.thumbnail
-        LEFT JOIN 
-            posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
-        LEFT JOIN 
-            categories ON categories.cat_id = posts_tag.tag_id
-        LEFT JOIN
-            authors ON authors.author_id = posts.author
-        WHERE 
-            posts.post_type = 'post' AND authors.author_slug = :author
-        GROUP BY 
-            posts.id, images.file_path
-        ORDER BY 
-            posts.pubDate DESC LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindParam(':author', $author, PDO::PARAM_STR);
-    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $totalStmt = $pdo->prepare("
-        SELECT COUNT(*) AS total FROM posts
-        JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post' AND authors.author_slug = :author
-    ");
-    $totalStmt->execute([':author' => $author]);
-    $total = $totalStmt->fetchColumn();
-
-    return ['posts' => $posts, 'total' => $total];
-}
-
-
 function makeDynamicPostBody($deadbase_id)
 {
     $api = $_ENV['API_URL'];
@@ -208,304 +107,13 @@ function makeDynamicPostBody($deadbase_id)
     return $post_code;
 }
 
-function single($slug, $pdo)
-{
-    $stmt = $pdo->prepare("
-        SELECT posts.*,images.file_path,
-            authors.author_slug,authors.author_email,authors.author_display_name,authors.author_quote,
-            GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(categories.cat_name) AS cat_names,
-            GROUP_CONCAT(tags.tag_slug) AS tag_slugs,
-            GROUP_CONCAT(tags.tag_name) AS tag_names 
-        FROM posts
-        LEFT JOIN images ON images.id = posts.thumbnail
-        LEFT JOIN posts_tag ON posts_tag.post_id = posts.id
-        LEFT JOIN categories ON categories.cat_id = posts_tag.tag_id AND posts_tag.tag_type = 2
-        LEFT JOIN tags ON tags.tag_id = posts_tag.tag_id AND posts_tag.tag_type = 1
-        LEFT JOIN authors ON authors.author_id = posts.author 
-        WHERE slug = :slug
-        GROUP BY posts.id
-    ");
-    $stmt->execute([':slug' => $slug]);
-    $res = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    $update = $pdo->prepare("UPDATE posts SET views = views + 1 WHERE slug = :slug");
-    $update->execute([':slug' => $slug]);
-
-    return $res;
-}
-
-
-function genre($cat, $limit, $offset, $pdo)
-{
-    $stmt = $pdo->prepare("
-        SELECT 
-            posts.id, posts.title, posts.pubDate, posts.slug, images.file_path,
-            GROUP_CONCAT(genres.genre_slug) AS cat_slugs,
-            GROUP_CONCAT(genres.genre_name) AS cat_names,
-            MAX(CASE WHEN genres.genre_slug = :cat THEN genres.genre_name ELSE NULL END) AS cat_name,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            authors.author_slug, authors.author_display_name
-        FROM posts
-        JOIN images ON images.id = posts.thumbnail
-        LEFT JOIN posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 3
-        LEFT JOIN genres ON genres.genre_id = posts_tag.tag_id
-        LEFT JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post'
-        GROUP BY posts.id, images.file_path
-        HAVING FIND_IN_SET(:cat, cat_slugs) > 0
-        ORDER BY posts.pubDate DESC LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindParam(':cat', $cat, PDO::PARAM_STR);
-    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $totalStmt = $pdo->prepare("
-        SELECT COUNT(*) AS total FROM posts 
-        JOIN posts_tag ON posts_tag.post_id = posts.id 
-        JOIN genres ON genres.genre_id = posts_tag.tag_id 
-        WHERE genres.genre_slug = :cat
-    ");
-    $totalStmt->execute([':cat' => $cat]);
-    $total = $totalStmt->fetchColumn();
-
-    return ['posts' => $posts, 'total' => $total];
-}
-
-
-function category($cat, $limit, $offset, $pdo)
-{
-    $stmt = $pdo->prepare("
-        SELECT 
-            posts.id, posts.title, posts.pubDate, posts.slug, images.file_path,
-            GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(categories.cat_name) AS cat_names,
-            MAX(CASE WHEN categories.cat_slug = :cat THEN categories.cat_name ELSE NULL END) AS cat_name,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            authors.author_slug, authors.author_display_name
-        FROM posts
-        JOIN images ON images.id = posts.thumbnail
-        LEFT JOIN posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
-        LEFT JOIN categories ON categories.cat_id = posts_tag.tag_id
-        LEFT JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post'
-        GROUP BY posts.id, images.file_path
-        HAVING FIND_IN_SET(:cat, cat_slugs) > 0
-        ORDER BY posts.pubDate DESC LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindParam(':cat', $cat, PDO::PARAM_STR);
-    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $totalStmt = $pdo->prepare("
-        SELECT COUNT(*) AS total FROM posts 
-        JOIN posts_tag ON posts_tag.post_id = posts.id 
-        JOIN categories ON categories.cat_id = posts_tag.tag_id 
-        WHERE categories.cat_slug = :cat
-    ");
-    $totalStmt->execute([':cat' => $cat]);
-    $total = $totalStmt->fetchColumn();
-
-    return ['posts' => $posts, 'total' => $total];
-}
-
-
-function search($s, $limit, $offset, $pdo)
-{
-    $s = trim($s);
-    $escaped = preg_quote($s);
-    $searchTerm = '\\b' . $escaped . '\\b';
-
-    // First Query: RLIKE exact word match
-    $stmt1 = $pdo->prepare("
-        SELECT 
-            posts.id, posts.title, posts.pubDate, posts.slug, 
-            images.file_path,
-            GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(categories.cat_name) AS cat_names,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            authors.author_slug, authors.author_display_name
-        FROM posts
-        JOIN images ON images.id = posts.thumbnail
-        LEFT JOIN posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
-        LEFT JOIN categories ON categories.cat_id = posts_tag.tag_id
-        LEFT JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post' AND posts.title RLIKE :search
-        GROUP BY posts.id, images.file_path
-        ORDER BY posts.pubDate DESC
-    ");
-    $stmt1->execute([':search' => $searchTerm]);
-    $p1 = $stmt1->fetchAll(PDO::FETCH_ASSOC);
-    $p1ids = array_column($p1, 'id');
-    $p1idsex = $p1ids ? "AND posts.id NOT IN (" . implode(',', $p1ids) . ")" : "";
-
-    // 2 Second Query: LIKE match (title)
-    $sql2 = "
-        SELECT 
-            posts.id, posts.title, posts.pubDate, posts.slug, 
-            images.file_path,
-            GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(categories.cat_name) AS cat_names,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            authors.author_slug, authors.author_display_name
-        FROM posts
-        JOIN images ON images.id = posts.thumbnail
-        LEFT JOIN posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
-        LEFT JOIN categories ON categories.cat_id = posts_tag.tag_id
-        LEFT JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post' AND posts.title LIKE :like $p1idsex
-        GROUP BY posts.id, images.file_path
-        ORDER BY posts.pubDate DESC
-    ";
-    $stmt2 = $pdo->prepare($sql2);
-    $stmt2->execute([':like' => "%$s%"]);
-    $p2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-    $p2ids = array_column($p2, 'id');
-    $all_ids = array_merge($p1ids, $p2ids);
-    $p2idsex = $all_ids ? "AND posts.id NOT IN (" . implode(',', $all_ids) . ")" : "";
-
-    // 3 ️Third Query: LIKE with spaced terms
-    $terms = explode(" ", $s);
-    $termsClause = '%' . implode('%', $terms) . '%';
-    $sql3 = "
-        SELECT 
-            posts.id, posts.title, posts.pubDate, posts.slug, 
-            images.file_path,
-            GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(categories.cat_name) AS cat_names,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            authors.author_slug, authors.author_display_name
-        FROM posts
-        JOIN images ON images.id = posts.thumbnail
-        LEFT JOIN posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
-        LEFT JOIN categories ON categories.cat_id = posts_tag.tag_id
-        LEFT JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post' AND posts.title LIKE :terms $p2idsex
-        GROUP BY posts.id, images.file_path
-        ORDER BY posts.pubDate DESC
-    ";
-    $stmt3 = $pdo->prepare($sql3);
-    $stmt3->execute([':terms' => $termsClause]);
-    $p3 = $stmt3->fetchAll(PDO::FETCH_ASSOC);
-    $p3ids = array_column($p3, 'id');
-    $all_ids = array_merge($p1ids, $p2ids, $p3ids);
-    $p3idsex = $all_ids ? "AND posts.id NOT IN (" . implode(',', $all_ids) . ")" : "";
-
-    // 4 Fourth Query: RLIKE match in content
-    $sql4 = "
-        SELECT 
-            posts.id, posts.title, posts.pubDate, posts.slug, 
-            images.file_path,
-            GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(categories.cat_name) AS cat_names,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            authors.author_slug, authors.author_display_name
-        FROM posts
-        JOIN images ON images.id = posts.thumbnail
-        LEFT JOIN posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
-        LEFT JOIN categories ON categories.cat_id = posts_tag.tag_id
-        LEFT JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post' AND posts.content RLIKE :search $p3idsex
-        GROUP BY posts.id, images.file_path
-        ORDER BY posts.pubDate DESC
-    ";
-    $stmt4 = $pdo->prepare($sql4);
-    $stmt4->execute([':search' => $searchTerm]);
-    $p4 = $stmt4->fetchAll(PDO::FETCH_ASSOC);
-
-    // Merge all
-    $all = array_merge($p1, $p2, $p3, $p4);
-
-    return [
-        'posts' => array_slice($all, $offset, $limit),
-        'total' => count($all)
-    ];
-}
-
-
-function totalPosts($pdo)
-{
-    $stmt = $pdo->query("SELECT COUNT(*) AS total FROM posts");
-    return $stmt->fetchColumn();
-}
-
-
-function posts($featuredPostIds, $limit, $offset, $pdo)
-{
-    // To safely append exclude clause, ensure it starts with a valid AND or is empty
-    $allowedClause = '';
-
-    if ($featuredPostIds) {
-        $allowedClause = "AND posts.id NOT in (" . implode(",", $featuredPostIds) . ")";
-    }
-
-    $stmt = $pdo->prepare("
-        SELECT 
-            posts.id, posts.title, posts.pubDate, posts.slug, 
-            images.file_path,
-            GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-            GROUP_CONCAT(categories.cat_name) AS cat_names,
-            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-            authors.author_slug, authors.author_display_name
-        FROM posts
-        JOIN images ON images.id = posts.thumbnail
-        LEFT JOIN posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
-        LEFT JOIN categories ON categories.cat_id = posts_tag.tag_id
-        LEFT JOIN authors ON authors.author_id = posts.author
-        WHERE posts.post_type = 'post' $allowedClause
-        GROUP BY posts.id, images.file_path
-        ORDER BY posts.pubDate DESC
-        LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-
-function featured($pdo)
-{
-    $featuredQuery = $pdo->query("SELECT 
-    posts.id,posts.title,posts.pubDate,posts.slug, 
-    images.file_path,
-    GROUP_CONCAT(categories.cat_slug) AS cat_slugs,
-    GROUP_CONCAT(categories.cat_name) AS cat_names,
-    (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.com_status = 1) AS comments,
-    authors.author_slug,authors.author_display_name
-FROM 
-    posts
-JOIN 
-    images ON images.id = posts.thumbnail
-LEFT JOIN 
-    posts_tag ON posts_tag.post_id = posts.id AND posts_tag.tag_type = 2
-LEFT JOIN 
-    categories ON categories.cat_id = posts_tag.tag_id
-LEFT JOIN
-	authors ON authors.author_id = posts.author
-WHERE 
-    posts.sticky = 1 AND posts.post_type = 'post'
-GROUP BY 
-    posts.id, 
-    images.file_path
-ORDER BY 
-    posts.pubDate DESC;");
-
-    $featuredPosts = $featuredQuery->fetchAll(PDO::FETCH_ASSOC);
-    return $featuredPosts;
-}
-
 function get_gravatar_url($email, $size = 64)
 {
     $email = strtolower(trim($email));
     $hash = md5($email);
     return "https://www.gravatar.com/avatar/$hash?s=$size";
 }
+
 function pagination($total, $pgno, $limit)
 {
     if ($total <= 0 || $limit <= 0) {
@@ -566,8 +174,11 @@ function pagination($total, $pgno, $limit)
     return $output;
 }
 
-function article($a, $cat, $sticky = false)
+function article($a, $sticky = false)
 {
+    $categories = json_decode($a['categories'], true);
+    $category_links = array_map(fn($c) => '<a href="' . $c['slug'] . '">' . $c['name'] . '</a>', $categories);
+
     echo '<article class="herald-lay-b post-' . $a['id'] . ' post type-post status-publish format-standard has-post-thumbnail' . (($sticky) ? " sticky" : '') . ' hentry">';
     echo '<div class="row">
 			<div class="col-lg-4 col-md-4 col-sm-4">
@@ -586,14 +197,7 @@ function article($a, $cat, $sticky = false)
 	<div class="col-lg-8 col-md-8 col-sm-8">
 		<div class="entry-header">
 			<span class="meta-category">';
-    $cat_slugs = $a['cat_slugs'] ? explode(',', $a['cat_slugs']) : [];
-    $cat_names = $a['cat_names'] ? explode(',', $a['cat_names']) : [];
-    $cat_html = [];
-    foreach ($cat_slugs as $index => $cat_slug) {
-        $cat_name = $cat_names[$index];
-        $cat_html[] = "<a href=/$cat/{$cat_slug} class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
-    }
-    echo implode('<span> &bull; </span>', $cat_html);
+    echo implode('<span> &bull; </span>', $category_links);
     echo '<h2 class="entry-title h3">
 				<a href="/' . $a['slug'] . '">' . $a['title'] . '</a></h2>
 				<div class="entry-meta">

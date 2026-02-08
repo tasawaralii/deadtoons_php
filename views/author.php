@@ -69,7 +69,7 @@ require_once "inc/head.php"
                         <?php
 
                         foreach ($posts as $a) {
-                            article($a, ("genre"), false);
+                            article($a);
                         }
 
                         ?>

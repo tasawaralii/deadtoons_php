@@ -2,19 +2,13 @@
 
     <!-- Categories -->
     <?php
-    $cat_slugs = $post['cat_slugs'] ? explode(',', $post['cat_slugs']) : [];
-    $cat_names = $post['cat_names'] ? explode(',', $post['cat_names']) : [];
-    $cat_html = [];
-    foreach ($cat_slugs as $index => $cat_slug) {
-        $cat_name = $cat_names[$index];
-        if (!$cat_name)
-            continue;
-        $cat_html[] = "<a href='/category/{$cat_slug}' class='herald-cat-{$cat_slug}'>{$cat_name}</a>";
-    }
 
-    if ($cat_html) {
+    $categories = json_decode($post['categories'], true);
+    $cat_links = array_map(fn($c) => "<a href='{$c['slug']}'>{$c['name']}</a>", $categories);
+
+    if ($cat_links) {
         echo '<span class="meta-category">';
-        echo implode('<span> &bull; </span>', $cat_html);
+        echo implode('<span> &bull; </span>', $cat_links);
         echo '</span>';
     }
     ?>

@@ -50,11 +50,11 @@ require_once "inc/head.php"
 						<?php
 
 						foreach ($featuredPosts as $a) {
-							article($a, "category", true);
+							article($a, true);
 						}
 
 						foreach ($posts as $a) {
-							article($a, ((isset($_GET['genres']) ? "genres" : "category")), false);
+							article($a, false);
 						}
 
 						?>
