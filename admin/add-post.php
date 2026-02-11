@@ -46,14 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
 if(isset($p['categories'])) {
     foreach($p['categories'] as $c) {
-        $pdo->query("INSERT IGNORE INTO posts_categories (post_id,category_id) VALUES ($postId,$c)");
+        $pdo->query("INSERT IGNORE INTO post_categories (post_id,category_id) VALUES ($postId,$c)");
     }
 }
 
 
 if(isset($p['genres'])) {
     foreach($p['genres'] as $g) {
-        $pdo->query("INSERT IGNORE INTO posts_genres (post_id,genre_id) VALUES ($postId,$g)");
+        $pdo->query("INSERT IGNORE INTO post_genres (post_id,genre_id) VALUES ($postId,$g)");
     }
 }
 
