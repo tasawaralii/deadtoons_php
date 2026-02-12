@@ -2,6 +2,10 @@
 
 $slug = $params['slug'];
 $post = single($slug, $pdo);
+if(!$post) {
+	require_once PROJECT_ROOT . "/views/error.php";
+	exit;
+}
 $ispost = $post['post_type'] == "post";
 $anime_name = explode(" (", $post['title']);
 $anime_name = trim($anime_name[0]);

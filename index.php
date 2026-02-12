@@ -6,6 +6,8 @@ require_once 'config.php';
 require_once 'functions.php';
 require_once 'dbService.php';
 
+define("PROJECT_ROOT", __DIR__);
+
 $router = new Router();
 
 $router->post("/post-comment", "ajax/comments-post.php");
