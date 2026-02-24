@@ -139,7 +139,7 @@ function posts($excludeIds, $limit, $offset, $pdo)
 
     $stmt = $pdo->prepare("
         SELECT 
-            id, title, slug, comments, categories, pubDate, file_path, author_slug,author_display_name 
+            id, title, slug, comments, categories, pubDate, file_path, is_image_new, author_slug,author_display_name 
         FROM view_posts
         WHERE 1=1 $excludeSql
         ORDER BY pubDate DESC 
@@ -333,7 +333,7 @@ function genre($genre, $limit, $offset, $pdo)
 function featured($pdo)
 {
     $stmt = $pdo->prepare("SELECT 
-        id, title, slug, comments, categories, pubDate, file_path, author_slug,author_display_name 
+        id, title, slug, comments, categories, pubDate, file_path, is_image_new, author_slug,author_display_name 
     FROM view_posts p WHERE p.sticky = 1");
     $stmt->execute();
     $featuredPosts = $stmt->fetchAll();

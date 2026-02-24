@@ -43,7 +43,7 @@ require_once "inc/head.php"
 
 							<div class="herald-post-thumbnail herald-post-thumbnail-single">
 								<span>
-									<img width="780" height="439" src="<?= IMAGE_DOMAIN . "/" . $post['file_path'] ?>"
+									<img src="<?= make_image_url($post['file_path'],'high', $post['is_image_new']) ?>"
 										class="attachment-herald-lay-single size-herald-lay-single wp-post-image"
 										alt="<?php echo $post['title'] ?>" />
 								</span>

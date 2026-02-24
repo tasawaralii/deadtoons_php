@@ -2,7 +2,7 @@
 
 $sql = "SELECT 
             posts.id,posts.title,posts.pubDate,posts.slug, 
-            images.file_path
+            images.file_path, images.is_new as is_new_image
         FROM 
             posts
         JOIN 
@@ -30,8 +30,7 @@ $related = $pdo->query($sql)->fetchAll();
     <div class="herald-related row row-eq-height">
         <?php
         foreach ($related as $r) {
-            $ex = pathinfo($r['file_path']);
-            $imgUrl = IMAGE_DOMAIN . "/" . $ex['dirname'] . '/' . $ex['filename'] . '-640x360.' . $ex['extension'];
+            $imgUrl = make_image_url($r['file_path'], 'mid', $r['is_new_image']);
 
             echo '
 

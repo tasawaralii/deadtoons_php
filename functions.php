@@ -107,6 +107,24 @@ function makeDynamicPostBody($deadbase_id)
     return $post_code;
 }
 
+function make_image_url($file_id, $size = 'mid', $is_new = false)
+{
+
+    if (!$is_new) {
+        if ($size == 'mid') {
+            $ex = pathinfo($file_id);
+            return $_ENV['OLD_IMAGE_DOMAIN'] . "/content/" . $ex['dirname'] . '/' . $ex['filename'] . '-640x360.' . $ex['extension'];
+        }
+        return $_ENV['OLD_IMAGE_DOMAIN'] . "/content/" . $file_id;
+    }
+
+    $res = "w780";
+    if ($size == "high") $res = "w1280";
+    if ($size == "low") $res = "w300";
+
+    return $_ENV['IMAGE_DOMAIN'] . "/" . $res . $file_id;
+}
+
 function get_gravatar_url($email, $size = 64)
 {
     $email = strtolower(trim($email));
@@ -185,12 +203,8 @@ function article($a, $sticky = false)
 			<div class="herald-post-thumbnail herald-format-icon-middle">
 				<a href="/' . $a['slug'] . '"
 				 title="' . $a['title'] . '">
-					<img width="640" height="360" 
-					src="' . IMAGE_DOMAIN . '/';
-
-    $ex = pathinfo($a['file_path']);
-    echo $ex['dirname'] . '/' . $ex['filename'] . '-640x360.' . $ex['extension'] . '" 
-					class="attachment-herald-lay-b1 size-herald-lay-b1 wp-post-image" alt="" 
+					<img src="' . make_image_url($a['file_path'], 'mid', $a['is_image_new']) .
+        '" class="attachment-herald-lay-b1 size-herald-lay-b1 wp-post-image" alt="" 
 					</a>
 		</div>
 		</div>
@@ -425,5 +439,3 @@ function get_popular_posts_cached($pdo, $limit = 15)
         return [];
     }
 }
-
-?>
