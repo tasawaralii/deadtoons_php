@@ -181,7 +181,7 @@ function search($s, $limit, $offset, $pdo)
     $stmt = $pdo->prepare("
         SELECT 
             vp.id, vp.title, vp.slug, vp.comments, vp.categories, 
-            vp.pubDate, vp.file_path,, vp.is_image_new, vp.author_slug, vp.author_display_name
+            vp.pubDate, vp.file_path, vp.is_image_new, vp.author_slug, vp.author_display_name
         FROM (
             SELECT id, 1 as priority, pubDate
             FROM view_posts
