@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $url = $_POST['url'];
     $post_id = $_POST['comment_post_ID'];
-    $parent_id = $_POST['comment_parent'];
+    $parent_id = $_POST['comment_parent'] == 0 ? null : $_POST['comment_parent'];
 
     if (isset($_POST['wp-comment-cookies-consent'])) {
         setcookie("dead_comment", json_encode(['author' => $author, 'email' => $email, 'url' => $url]), time() + (86400 * 30), "/");
@@ -65,16 +65,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $sql->execute();
 
         $inserted_comment_id = $pdo->lastInsertId();
-
     } else {
 
         $inserted_comment_id = $double['com_id'];
-
     }
 
     $slug = $_POST['post_slug'] . '#comment-' . $inserted_comment_id;
 
     header("Location: /$slug");
 }
-
-?>

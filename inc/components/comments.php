@@ -12,7 +12,18 @@ if (isset($_COOKIE['dead_comment'])) {
 }
 
 // Fetch the comments from the database
-$res = $pdo->query("SELECT * FROM `comments` WHERE post_id = $com_post_id and com_status = 1 ORDER BY com_date ASC")->fetchAll();
+$stmt = $pdo->prepare(
+    "SELECT com_id , COALESCE(parent_id, 0) as parent_id, com_author, com_email, com_date, com_content
+    FROM `comments` 
+    WHERE post_id = ?
+        and com_status = 1 
+    ORDER BY com_date ASC;
+    "
+);
+
+$stmt->execute([$com_post_id]);
+
+$res = $stmt->fetchAll();
 
 // Start HTML output
 echo '<div id="comments" class="herald-comments">';
@@ -81,7 +92,7 @@ echo '</div><!-- #comments -->';
 <script>
     document.addEventListener('DOMContentLoaded', (event) => {
         document.querySelectorAll('.comment-reply-link').forEach(link => {
-            link.addEventListener('click', function (e) {
+            link.addEventListener('click', function(e) {
                 e.preventDefault();
                 const commentId = this.getAttribute('data-commentid');
                 const respondElement = document.getElementById('respond');
@@ -100,7 +111,7 @@ echo '</div><!-- #comments -->';
         });
 
         // Cancel reply functionality
-        document.getElementById('cancel-comment-reply-link').addEventListener('click', function (e) {
+        document.getElementById('cancel-comment-reply-link').addEventListener('click', function(e) {
             e.preventDefault();
             const respondElement = document.getElementById('respond');
             const parentIdInput = document.getElementById('comment_parent');
