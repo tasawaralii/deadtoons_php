@@ -17,6 +17,7 @@ p.post_type,
 p.views,
 
 i.file_path,
+i.is_image_new,
 
 a.author_slug,
 a.author_display_name,
@@ -69,7 +70,7 @@ function author_posts($author, $limit, $offset, $pdo)
 {
     $stmt = $pdo->prepare("
         SELECT 
-        id, title, slug, comments, categories, pubDate, file_path, author_slug, author_display_name, author_email, author_quote
+        id, title, slug, comments, categories, pubDate, file_path,is_image_new, author_slug, author_display_name, author_email, author_quote
         FROM view_posts
         WHERE author_slug = :author
         ORDER BY pubDate DESC 
@@ -94,7 +95,7 @@ function category($cat, $limit, $offset, $pdo)
 {
     $stmt = $pdo->prepare("
         SELECT 
-            id, title, slug, comments, categories, pubDate, file_path, author_slug,author_display_name 
+            id, title, slug, comments, categories, pubDate, file_path,is_image_new, author_slug,author_display_name 
         FROM view_posts p
         JOIN post_categories pc ON pc.post_id = p.id
         JOIN categories c ON c.cat_id = pc.category_id
@@ -155,36 +156,6 @@ function posts($excludeIds, $limit, $offset, $pdo)
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
-function tag($tag, $limit, $offset, $pdo)
-{
-    $stmt = $pdo->prepare("
-        SELECT DISTINCT p.id
-        FROM posts p
-        JOIN posts_tag pt ON pt.post_id = p.id
-        JOIN tags t ON t.tag_id = pt.tag_id
-        WHERE t.tag_slug = :tag
-        ORDER BY p.pubDate DESC LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindParam(':tag', $tag, PDO::PARAM_STR);
-    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    $res = posts_by_ids($pdo, $ids, true);
-
-    $totalStmt = $pdo->prepare("
-        SELECT COUNT(*) AS total FROM posts 
-        JOIN posts_tag ON posts_tag.post_id = posts.id 
-        JOIN tags ON tags.tag_id = posts_tag.tag_id 
-        WHERE tags.tag_slug = :tag
-    ");
-    $totalStmt->execute([':tag' => $tag]);
-    $total = $totalStmt->fetchColumn();
-
-    return ['posts' => $res, 'total' => $total];
-}
-
 function single($slug, $pdo)
 {
     $stmt = $pdo->prepare("SELECT * FROM view_posts p WHERE p.slug = :slug");
@@ -210,7 +181,7 @@ function search($s, $limit, $offset, $pdo)
     $stmt = $pdo->prepare("
         SELECT 
             vp.id, vp.title, vp.slug, vp.comments, vp.categories, 
-            vp.pubDate, vp.file_path, vp.author_slug, vp.author_display_name
+            vp.pubDate, vp.file_path,, vp.is_image_new, vp.author_slug, vp.author_display_name
         FROM (
             SELECT id, 1 as priority, pubDate
             FROM view_posts
@@ -302,7 +273,7 @@ function genre($genre, $limit, $offset, $pdo)
 {
     $stmt = $pdo->prepare(
         "SELECT
-            id, title, slug, comments, genres as categories, pubDate, file_path, author_slug,author_display_name 
+            id, title, slug, comments, genres as categories, pubDate, file_path, is_image_new, author_slug,author_display_name 
         FROM view_posts p
         JOIN post_genres pg ON pg.post_id = p.id
         JOIN genres g ON g.genre_id = pg.genre_id
